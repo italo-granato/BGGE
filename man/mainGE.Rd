@@ -21,9 +21,8 @@ the second column is a \code{factor} for assigned individuals and the third colu
 \item{h}{\code{numeric} Bandwidth parameter to create the gaussian kernel matrix. For \code{method} \code{Gk-EB}, if \code{h} is not provided,
 then it is computed following a empirical bayesian selection method. See details}
 
-\item{model}{Specifies the genotype by environment model to be fitted. \code{SM} is the single-environment main genotypic effect model, 
-\code{MM} is the multi-environment main genotypic effect model, \code{MDs} is the multi-environment single variance genotype × environment deviation model,
-\code{MDe} is the multi-environment, environment-specific variance genotype × environment deviation model}
+\item{model}{Specifies the genotype by environment model to be fitted. \code{SM} is the single-environment main genotypic effect model. \code{MM} is the multi-environment main genotypic effect model, \code{MDs} is the multi-environment single variance genotype x environment deviation model,
+\code{MDe} is the multi-environment, environment-specific variance genotype x environment deviation model}
 
 \item{nIter}{\code{integer} Number of iterations.}
 
