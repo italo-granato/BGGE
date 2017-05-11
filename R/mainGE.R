@@ -87,10 +87,16 @@ getK <- function(Y, X, XF = NULL, method = c("GK", "G-BLUP"), h = NULL, model = 
   {
 
   hasXF <- !is.null(XF)
-  hash <- !is.null(h)
   subj <- levels(Y[,2])
   env <- levels(Y[,1])
   nEnv <- length(env)
+
+  if(hasXF)
+  {
+    dimXF <- dim(XF)[1]
+    if ((model == "Cov" &  dimXF != length(subj)) | (model != "Cov" & dimXF != dim(Y)[1]))
+      stop("Matrix of fixed effects of different dimension")
+  }
 
   if(is.null(rownames(X)))
     stop("Genotype names are missing")
