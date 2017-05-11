@@ -50,12 +50,7 @@ mainGE <- function(Y, X, XF=NULL, W=NULL, method=c("GK", "G-BLUP"), h=NULL, mode
   subjects <- levels(Y[,2])
   environ <- levels(Y[,1])
 
-  model.tmp <- model
-
-  if (model == "Cov")
-    model.tmp <- "SM"
-
-  ETA.tmp <- getK(Y=Y, X=X, method = method, h=h, model = model.tmp)
+  ETA.tmp <- getK(Y=Y, X=X, method = method, h=h, model = model)
 
   if (model %in% c("MM", "MDs")) {
     if (hasW) {
