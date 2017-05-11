@@ -83,21 +83,22 @@ mainGE <- function(Y, X, XF=NULL, W=NULL, method=c("GK", "G-BLUP"), h=NULL, mode
 }
 
 
-
-getK <- function(Y, X, XF = NULL, method = c("GK", "G-BLUP"), h = NULL, model = c("SM", "MM", "MDs", "MDe"))
 getK <- function(Y, X, XF = NULL, method = c("GK", "G-BLUP"), h = NULL, model = c("SM", "MM", "MDs", "MDe", "Cov"))
   {
 
   hasXF <- !is.null(XF)
   hash <- !is.null(h)
+  subj <- levels(Y[,2])
+  env <- levels(Y[,1])
+  nEnv <- length(env)
 
   if(is.null(rownames(X)))
+    stop("Genotype names are missing")
 
-  if(!all(levels(Y[,2]) %in% rownames(X)))
+
   if(!all(subj %in% rownames(X)))
     stop("Not all genotypes presents in phenotypic file are in marker matrix")
 
-  X <- X[rownames(X) %in% subj,]
   X <- X[match(subj, rownames(X)),]
 
   Ze <- model.matrix( ~ factor(Y[,1L]) - 1)
