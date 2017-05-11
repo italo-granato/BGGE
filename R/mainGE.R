@@ -64,8 +64,8 @@ mainGE <- function(Y, X, XF=NULL, W=NULL, method=c("GK", "G-BLUP"), h=NULL, mode
 
   if (model == "Cov") {
     tmpY <- matrix(nrow = length(subjects), ncol = length(environ), data = NA)
-    colnames(tmpY) <- subjects
-    rownames(tmpY) <- environ
+    colnames(tmpY) <- environ
+    rownames(tmpY) <- subjects
 
     for (i in 1:length(environ)) {
       curEnv <- Y[, 1L] == environ[i]
@@ -91,8 +91,7 @@ getK <- function(Y, X, XF = NULL, method = c("GK", "G-BLUP"), h = NULL, model = 
   env <- levels(Y[,1])
   nEnv <- length(env)
 
-  if(hasXF)
-  {
+  if(hasXF){
     dimXF <- dim(XF)[1]
     if ((model == "Cov" &  dimXF != length(subj)) | (model != "Cov" & dimXF != dim(Y)[1]))
       stop("Matrix of fixed effects of different dimension")
@@ -105,10 +104,18 @@ getK <- function(Y, X, XF = NULL, method = c("GK", "G-BLUP"), h = NULL, model = 
   if(!all(subj %in% rownames(X)))
     stop("Not all genotypes presents in phenotypic file are in marker matrix")
 
-  X <- X[match(subj, rownames(X)),]
+  X <- X[subj,]
 
-  Ze <- model.matrix( ~ factor(Y[,1L]) - 1)
-  Zg <- model.matrix( ~ factor(Y[,2L]) - 1)
+  if(model == "SM"){
+    if (nEnv > 1)
+      stop("Single model choosen, but more than one environment is in the phenotype file")
+
+    Zg <- model.matrix( ~ factor(Y[,2L]) - 1)
+  }
+  else{
+    Ze <- model.matrix( ~ factor(Y[,1L]) - 1)
+    Zg <- model.matrix( ~ factor(Y[,2L]) - 1)
+  }
 
   if (model == "Cov")
     Zg <- model.matrix( ~ factor(subj) - 1)
@@ -145,8 +152,6 @@ getK <- function(Y, X, XF = NULL, method = c("GK", "G-BLUP"), h = NULL, model = 
   switch(model,
 
     SM = {
-      if (nEnv > 1)
-        stop("single model choosen, but more than one environment is in the phenotype file")
       out <- list(K = ker.tmp, model = "RKHS")
     },
 
@@ -161,7 +166,7 @@ getK <- function(Y, X, XF = NULL, method = c("GK", "G-BLUP"), h = NULL, model = 
     },
 
     MDe = {
-        ZEE <- matrix(data = 0, nrow = nrow(Ze),ncol = ncol(Ze))
+        ZEE <- matrix(data = 0, nrow = nrow(Ze), ncol = ncol(Ze))
 
         out <- lapply(1:nEnv, function(i){
           ZEE[,i] <- Ze[,i]
@@ -171,6 +176,10 @@ getK <- function(Y, X, XF = NULL, method = c("GK", "G-BLUP"), h = NULL, model = 
         })
         out <- c(list(list(K = G, model = "RKHS")), out)
         names(out) <- c("mu", env)
+    },
+
+    Cov = {
+      out <- list(K = ker.tmp, model = "RKHS")
     }, #DEFAULT CASE
     {
       stop("Model selected is not available ")
