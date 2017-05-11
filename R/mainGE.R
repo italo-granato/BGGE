@@ -90,17 +90,15 @@ getK <- function(Y, X, XF = NULL, method = c("GK", "G-BLUP"), h = NULL, model = 
 
   hasXF <- !is.null(XF)
   hash <- !is.null(h)
-  nEnv <- nlevels(Y[,1L])
-  Env <- levels(Y[,1L])
-  subj <- levels(Y[,2L])
 
   if(is.null(rownames(X)))
-    stop("Marker name is missing")
 
   if(!all(levels(Y[,2]) %in% rownames(X)))
+  if(!all(subj %in% rownames(X)))
     stop("Not all genotypes presents in phenotypic file are in marker matrix")
 
   X <- X[rownames(X) %in% subj,]
+  X <- X[match(subj, rownames(X)),]
 
   Ze <- model.matrix( ~ factor(Y[,1L]) - 1)
   Zg <- model.matrix( ~ factor(Y[,2L]) - 1)
