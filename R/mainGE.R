@@ -85,6 +85,7 @@ mainGE <- function(Y, X, XF=NULL, W=NULL, method=c("GK", "G-BLUP"), h=NULL, mode
 
 
 getK <- function(Y, X, XF = NULL, method = c("GK", "G-BLUP"), h = NULL, model = c("SM", "MM", "MDs", "MDe"))
+getK <- function(Y, X, XF = NULL, method = c("GK", "G-BLUP"), h = NULL, model = c("SM", "MM", "MDs", "MDe", "Cov"))
   {
 
   hasXF <- !is.null(XF)
@@ -103,6 +104,9 @@ getK <- function(Y, X, XF = NULL, method = c("GK", "G-BLUP"), h = NULL, model = 
 
   Ze <- model.matrix( ~ factor(Y[,1L]) - 1)
   Zg <- model.matrix( ~ factor(Y[,2L]) - 1)
+
+  if (model == "Cov")
+    Zg <- model.matrix( ~ factor(subj) - 1)
 
   switch(method,
          'G-BLUP' = {
