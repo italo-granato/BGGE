@@ -156,7 +156,6 @@ getK <- function(Y, X, XF = NULL, method = c("GK", "G-BLUP"), h = NULL, model = 
     },
 
     MDe = {
-      if (method == "G-BLUP") {
         ZEE <- matrix(data = 0, nrow = nrow(Ze),ncol = ncol(Ze))
 
         out <- lapply(1:nEnv, function(i){
@@ -166,32 +165,7 @@ getK <- function(Y, X, XF = NULL, method = c("GK", "G-BLUP"), h = NULL, model = 
           return(list(K = K3, model = "RKHS"))
         })
         out <- c(list(list(K = G, model = "RKHS")), out)
-        names(out) <- c("mu", paste("e", 2:length(out), sep = ""))
-      }
-
-      else {
-        D1 <- list(D00)
-
-        for (i in 1:nEnv) {
-          D1[[i + 1L]] <- D[rownames(D) %in% Y[Y[,1L] == Env[i], 2L], rownames(D) %in% Y[Y[,1L] == Env[i], 2L]]
-
-          if (!hash) {
-            Y1 <- Y[naY & Y[,1L] == Env[i], ]
-            D2 <- D[match(Y1[, 2L], rownames(D)), match(Y1[, 2L], rownames(D))]
-            q05 <- quantile(D2, 0.05)
-            sol <- optim(c(1, 1), margh.fun, y = Y1[,3L], D = D2, q = q05,
-                        method = "L-BFGS-B", lower = c(0.05, 0.05), upper = c(6, 30))
-            h[i + 1] <- sol$par[1]
-          }
-        }
-
-        GKe <- lapply(X = Map("*", D1, -h), FUN = function(x) exp(x/quantile(x, 0.05)))
-        v <- integer(nEnv)
-        mDiag <- lapply(X = 1:nEnv, FUN = function(i){v[i] <- 1; diag(v)})
-
-        ETA.tmp <- Map(kronecker, mDiag, GKe[2:length(GKe)])
-        out <- lapply(c(list(GKe[[1L]]), ETA.tmp), function(x) list(K = x, model = "RKHS"))
-      }
+        names(out) <- c("mu", env)
     }, #DEFAULT CASE
     {
       stop("Model selected is not available ")
