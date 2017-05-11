@@ -45,22 +45,20 @@
 #'export
 #'
 mainGE <- function(Y, X, XF=NULL, W=NULL, method=c("GK", "G-BLUP"), h=NULL, model = c("SM", "MM", "MDs", "MDe", "Cov"),
-                   nIter = 1000, burnIn = 300, thin = 5, ...)
-  {
+                   nIter = 1000, burnIn = 300, thin = 5, ...) {
   hasW <- !is.null(W)
   subjects <- levels(Y[,2])
   environ <- levels(Y[,1])
 
   model.tmp <- model
 
-  if(model == "Cov")
+  if (model == "Cov")
     model.tmp <- "SM"
 
   ETA.tmp <- getK(Y=Y, X=X, method = method, h=h, model = model.tmp)
 
-  if(model %in% c("MM", "MDs"))
-  {
-    if(hasW){
+  if (model %in% c("MM", "MDs")) {
+    if (hasW) {
       Ze <- model.matrix(~factor(Y[,1])-1)
       Zg <- model.matrix(~factor(Y[,2])-1)
       EC <- Ze %*% (W %*% t(Ze))
@@ -69,13 +67,12 @@ mainGE <- function(Y, X, XF=NULL, W=NULL, method=c("GK", "G-BLUP"), h=NULL, mode
     }
   }
 
-  if(model == "Cov")
-    {
+  if (model == "Cov") {
     tmpY <- matrix(nrow = length(subjects), ncol = length(environ), data = NA)
     colnames(tmpY) <- subjects
     rownames(tmpY) <- environ
 
-    for(i in 1:length(environ)){
+    for (i in 1:length(environ)) {
       curEnv <- Y[, 1L] == environ[i]
       curSub <- match(Y[curEnv, 2], rownames(tmpY))
       tmpY[curSub, i] <- Y[curEnv, 3]
@@ -83,7 +80,7 @@ mainGE <- function(Y, X, XF=NULL, W=NULL, method=c("GK", "G-BLUP"), h=NULL, mode
 
     fit <- GEcov(Y = tmpY, K = ETA.tmp$K, nIter = nIter, burnIn = burnIn, thin = thin,...)
     }
-  else{
+  else {
     #' @importFrom BGLR BGLR
     fit <- BGLR(y = Y[,3], ETA = ETA.tmp, nIter = nIter, burnIn = burnIn, thin = thin,...)
   }
@@ -92,7 +89,7 @@ mainGE <- function(Y, X, XF=NULL, W=NULL, method=c("GK", "G-BLUP"), h=NULL, mode
 
 
 
-getK <- function(Y, X, XF=NULL, method=c("GK", "G-BLUP"), h=NULL, model = c("SM", "MM", "MDs", "MDe"))
+getK <- function(Y, X, XF = NULL, method = c("GK", "G-BLUP"), h = NULL, model = c("SM", "MM", "MDs", "MDe"))
   {
 
   hasXF <- !is.null(XF)
@@ -112,96 +109,103 @@ getK <- function(Y, X, XF=NULL, method=c("GK", "G-BLUP"), h=NULL, model = c("SM"
   Ze <- model.matrix( ~ factor(Y[,1L]) - 1)
   Zg <- model.matrix( ~ factor(Y[,2L]) - 1)
 
-  if(method == "G-BLUP"){
-    ker.tmp <- tcrossprod(X)/ncol(X)
-    G <- Zg %*% (ker.tmp %*% t(Zg))
-  }
+  switch(method,
+         'G-BLUP' = {
+           # case 'G-BLUP'...
+           ker.tmp <- tcrossprod(X) / ncol(X)
+           G <- Zg %*% (ker.tmp %*% t(Zg))
+         },
+         GK = {
+           print("Gk")
+           # case 'GK'...
+           D <- (as.matrix(dist(X))) ^ 2
+           naY <- !is.na(Y[, 3])
+           Y0 <- Y[naY, 3]
+           D0 <- kronecker(matrix(nrow = nEnv, ncol = nEnv, 1), D)
+           rownames(D0) <- rep(rownames(D), nEnv)
+           D00 <- D0[match(Y[, 2L], rownames(D0)), match(Y[, 2L], rownames(D0))]
 
-  if(method == "GK"){
-    D <- (as.matrix(dist(X))) ^ 2
-    naY <- !is.na(Y[,3])
-    Y0 <- Y[naY, 3]
-    D0 <- kronecker(matrix(nrow = nEnv, ncol = nEnv, 1), D)
-    rownames(D0) <- rep(rownames(D), nEnv)
-    D00 <- D0[match(Y[, 2L], rownames(D0)), match(Y[, 2L], rownames(D0))]
+           if (!hash) {
+             source(paste(getwd(), "/margh.fun.R", sep = "")) # calling margh.fun
+             sol <- optim(c(1, 1), margh.fun, y = Y0, D = D00, q = quantile(D00, 0.05),
+                          method = "L-BFGS-B", lower = c(0.05, 0.05), upper = c(6, 30))
+             h <- sol$par[1]
+           }
 
-    if(!hash){
-      source(paste(getwd(), "/margh.fun.R", sep = "")) # calling margh.fun
-      sol <- optim(c(1, 1), margh.fun, y = Y0, D = D00, q = quantile(D00, 0.05),
-                   method = "L-BFGS-B", lower = c(0.05, 0.05), upper = c(6, 30))
-      h <- sol$par[1]
-    }
+           ker.tmp <- exp(-h * D / quantile(D, 0.05))
+           G <- Zg %*% (ker.tmp %*% t(Zg))
+         },
+         {
+           stop("Error, the method selected is not available ")
+         })
 
-    ker.tmp <- exp(-h * D / quantile(D, 0.05))
-    G <- Zg %*% (ker.tmp %*% t(Zg))
-  }
+  switch(model,
 
-  if(model == "SM"){
-    if(nEnv > 1)
-      stop("single model choosen, but more than one environment is in the phenotype file")
-    out <- list(K = ker.tmp, model = "RKHS")
-  }
+    SM = {
+      if (nEnv > 1)
+        stop("single model choosen, but more than one environment is in the phenotype file")
+      out <- list(K = ker.tmp, model = "RKHS")
+    },
 
-  if(model == "MM"){
-    out <- list(G = list(K = G, model = "RKHS"))
-  }
+    MM = {
+      out <- list(G = list(K = G, model = "RKHS"))
+    },
 
-  if(model == "MDs"){
-    E <- tcrossprod(Ze)
-    GE <- G * E
-    out <- list(G = list(K = G, model = "RKHS"), GE = list(K = GE, model = "RKHS"))
-  }
+    MDs = {
+      E <- tcrossprod(Ze)
+      GE <- G * E
+      out <- list(G = list(K = G, model = "RKHS"), GE = list(K = GE, model = "RKHS"))
+    },
 
-  if(model == "MDe" & method == "G-BLUP"){
-    ZEE <- matrix(data = 0, nrow = nrow(Ze),ncol = ncol(Ze))
+    MDe = {
+      if (method == "G-BLUP") {
+        ZEE <- matrix(data = 0, nrow = nrow(Ze),ncol = ncol(Ze))
 
-    out <- lapply(1:nEnv, function(i){
-      ZEE[,i] <- Ze[,i]
-      ZEEZ <- ZEE %*% t(Ze)
-      K3 <- G * ZEEZ
-      return(list(K = K3, model = "RKHS"))
-    })
-    out <- c(list(list(K = G, model = "RKHS")), out)
-    names(out) <- c("mu", paste("e", 2:length(out), sep=""))
-  }
-
-
-  if(model == "MDe" & method == "GK"){
-    D1 <- list(D00)
-
-    for (i in 1:nEnv){
-      D1[[i + 1L]] <- D[rownames(D) %in% Y[Y[,1L] == Env[i], 2L], rownames(D) %in% Y[Y[,1L] == Env[i], 2L]]
-
-      if(!hash){
-        Y1 <- Y[naY & Y[,1L] == Env[i], ]
-        D2 <- D[match(Y1[, 2L], rownames(D)), match(Y1[, 2L], rownames(D))]
-        q05 <- quantile(D2, 0.05)
-        sol <-optim(c(1, 1), margh.fun, y = Y1[,3L], D = D2, q = q05,
-                    method = "L-BFGS-B", lower = c(0.05, 0.05), upper = c(6, 30))
-        h[i+1] <- sol$par[1]
+        out <- lapply(1:nEnv, function(i){
+          ZEE[,i] <- Ze[,i]
+          ZEEZ <- ZEE %*% t(Ze)
+          K3 <- G * ZEEZ
+          return(list(K = K3, model = "RKHS"))
+        })
+        out <- c(list(list(K = G, model = "RKHS")), out)
+        names(out) <- c("mu", paste("e", 2:length(out), sep = ""))
       }
-    }
 
-    GKe <- lapply(X = Map("*", D1, -h), FUN = function(x) exp(x/quantile(x, 0.05)))
-    v <- integer(nEnv)
-    mDiag <- lapply(X = 1:nEnv, FUN = function(i){v[i]<-1;diag(v)})
+      else {
+        D1 <- list(D00)
 
-    ETA.tmp <- Map(kronecker, mDiag, GKe[2:length(GKe)])
-    out <- lapply(c(list(GKe[[1L]]), ETA.tmp), function(x) list(K = x, model = "RKHS"))
-  }
+        for (i in 1:nEnv) {
+          D1[[i + 1L]] <- D[rownames(D) %in% Y[Y[,1L] == Env[i], 2L], rownames(D) %in% Y[Y[,1L] == Env[i], 2L]]
 
+          if (!hash) {
+            Y1 <- Y[naY & Y[,1L] == Env[i], ]
+            D2 <- D[match(Y1[, 2L], rownames(D)), match(Y1[, 2L], rownames(D))]
+            q05 <- quantile(D2, 0.05)
+            sol <- optim(c(1, 1), margh.fun, y = Y1[,3L], D = D2, q = q05,
+                        method = "L-BFGS-B", lower = c(0.05, 0.05), upper = c(6, 30))
+            h[i + 1] <- sol$par[1]
+          }
+        }
 
-  if(hasXF){
-    out <- c(list(list(X = XF, model = "FIXED")), out)
-    return(out)
-    }else{
-    return(out)
-  }
+        GKe <- lapply(X = Map("*", D1, -h), FUN = function(x) exp(x/quantile(x, 0.05)))
+        v <- integer(nEnv)
+        mDiag <- lapply(X = 1:nEnv, FUN = function(i){v[i] <- 1; diag(v)})
 
+        ETA.tmp <- Map(kronecker, mDiag, GKe[2:length(GKe)])
+        out <- lapply(c(list(GKe[[1L]]), ETA.tmp), function(x) list(K = x, model = "RKHS"))
+      }
+    }, #DEFAULT CASE
+    {
+      stop("Error, the model selected is not available ")
+    })
+
+  ifelse(hasXF, #Test
+         return(c(list(list(X = XF, model = "FIXED")), out)), #TRUE
+         return(out)) #FALSE
 }
 
 
-GEcov <- function(Y, K, nIter = 1000, burnIn = 300, thin = 5,...)
+GEcov <- function(Y, K, nIter = 1000, burnIn = 300, thin = 5, ...)
   {
   env <- ncol(Y)
   In <- diag(x = 1, nrow = nrow(Y), ncol = nrow(Y))
