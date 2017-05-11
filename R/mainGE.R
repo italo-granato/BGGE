@@ -133,7 +133,7 @@ getK <- function(Y, X, XF = NULL, method = c("GK", "G-BLUP"), h = NULL, model = 
            G <- Zg %*% (ker.tmp %*% t(Zg))
          },
          {
-           stop("Error, the method selected is not available ")
+           stop("Method selected is not available ")
          })
 
   switch(model,
@@ -193,7 +193,7 @@ getK <- function(Y, X, XF = NULL, method = c("GK", "G-BLUP"), h = NULL, model = 
       }
     }, #DEFAULT CASE
     {
-      stop("Error, the model selected is not available ")
+      stop("Model selected is not available ")
     })
 
   ifelse(hasXF, #Test
