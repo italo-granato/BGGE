@@ -50,12 +50,7 @@ mainGE <- function(Y, X, XF=NULL, W=NULL, method=c("GK", "G-BLUP"), h=NULL, mode
   subjects <- levels(Y[,2])
   environ <- levels(Y[,1])
 
-  model.tmp <- model
-
-  if (model == "Cov")
-    model.tmp <- "SM"
-
-  ETA.tmp <- getK(Y=Y, X=X, method = method, h=h, model = model.tmp)
+  ETA.tmp <- getK(Y=Y, X=X, method = method, h=h, model = model)
 
   if (model %in% c("MM", "MDs")) {
     if (hasW) {
@@ -69,8 +64,8 @@ mainGE <- function(Y, X, XF=NULL, W=NULL, method=c("GK", "G-BLUP"), h=NULL, mode
 
   if (model == "Cov") {
     tmpY <- matrix(nrow = length(subjects), ncol = length(environ), data = NA)
-    colnames(tmpY) <- subjects
-    rownames(tmpY) <- environ
+    colnames(tmpY) <- environ
+    rownames(tmpY) <- subjects
 
     for (i in 1:length(environ)) {
       curEnv <- Y[, 1L] == environ[i]
@@ -88,26 +83,42 @@ mainGE <- function(Y, X, XF=NULL, W=NULL, method=c("GK", "G-BLUP"), h=NULL, mode
 }
 
 
-
-getK <- function(Y, X, XF = NULL, method = c("GK", "G-BLUP"), h = NULL, model = c("SM", "MM", "MDs", "MDe"))
+getK <- function(Y, X, XF = NULL, method = c("GK", "G-BLUP"), h = NULL, model = c("SM", "MM", "MDs", "MDe", "Cov"))
   {
 
   hasXF <- !is.null(XF)
-  hash <- !is.null(h)
-  nEnv <- nlevels(Y[,1L])
-  Env <- levels(Y[,1L])
-  subj <- levels(Y[,2L])
+  subj <- levels(Y[,2])
+  env <- levels(Y[,1])
+  nEnv <- length(env)
+
+  if(hasXF){
+    dimXF <- dim(XF)[1]
+    if ((model == "Cov" &  dimXF != length(subj)) | (model != "Cov" & dimXF != dim(Y)[1]))
+      stop("Matrix of fixed effects of different dimension")
+  }
 
   if(is.null(rownames(X)))
-    stop("Marker name is missing")
+    stop("Genotype names are missing")
 
-  if(!all(levels(Y[,2]) %in% rownames(X)))
+
+  if(!all(subj %in% rownames(X)))
     stop("Not all genotypes presents in phenotypic file are in marker matrix")
 
-  X <- X[rownames(X) %in% subj,]
+  X <- X[subj,]
 
-  Ze <- model.matrix( ~ factor(Y[,1L]) - 1)
-  Zg <- model.matrix( ~ factor(Y[,2L]) - 1)
+  if(model == "SM"){
+    if (nEnv > 1)
+      stop("Single model choosen, but more than one environment is in the phenotype file")
+
+    Zg <- model.matrix( ~ factor(Y[,2L]) - 1)
+  }
+  else{
+    Ze <- model.matrix( ~ factor(Y[,1L]) - 1)
+    Zg <- model.matrix( ~ factor(Y[,2L]) - 1)
+  }
+
+  if (model == "Cov")
+    Zg <- model.matrix( ~ factor(subj) - 1)
 
   switch(method,
          'G-BLUP' = {
@@ -125,8 +136,7 @@ getK <- function(Y, X, XF = NULL, method = c("GK", "G-BLUP"), h = NULL, model = 
            rownames(D0) <- rep(rownames(D), nEnv)
            D00 <- D0[match(Y[, 2L], rownames(D0)), match(Y[, 2L], rownames(D0))]
 
-           if (!hash) {
-             source(paste(getwd(), "/margh.fun.R", sep = "")) # calling margh.fun
+           if (is.null(h)) {
              sol <- optim(c(1, 1), margh.fun, y = Y0, D = D00, q = quantile(D00, 0.05),
                           method = "L-BFGS-B", lower = c(0.05, 0.05), upper = c(6, 30))
              h <- sol$par[1]
@@ -136,14 +146,12 @@ getK <- function(Y, X, XF = NULL, method = c("GK", "G-BLUP"), h = NULL, model = 
            G <- Zg %*% (ker.tmp %*% t(Zg))
          },
          {
-           stop("Error, the method selected is not available ")
+           stop("Method selected is not available ")
          })
 
   switch(model,
 
     SM = {
-      if (nEnv > 1)
-        stop("single model choosen, but more than one environment is in the phenotype file")
       out <- list(K = ker.tmp, model = "RKHS")
     },
 
@@ -158,8 +166,7 @@ getK <- function(Y, X, XF = NULL, method = c("GK", "G-BLUP"), h = NULL, model = 
     },
 
     MDe = {
-      if (method == "G-BLUP") {
-        ZEE <- matrix(data = 0, nrow = nrow(Ze),ncol = ncol(Ze))
+        ZEE <- matrix(data = 0, nrow = nrow(Ze), ncol = ncol(Ze))
 
         out <- lapply(1:nEnv, function(i){
           ZEE[,i] <- Ze[,i]
@@ -168,36 +175,16 @@ getK <- function(Y, X, XF = NULL, method = c("GK", "G-BLUP"), h = NULL, model = 
           return(list(K = K3, model = "RKHS"))
         })
         out <- c(list(list(K = G, model = "RKHS")), out)
-        names(out) <- c("mu", paste("e", 2:length(out), sep = ""))
-      }
+        names(out) <- c("mu", env)
+    },
 
-      else {
-        D1 <- list(D00)
-
-        for (i in 1:nEnv) {
-          D1[[i + 1L]] <- D[rownames(D) %in% Y[Y[,1L] == Env[i], 2L], rownames(D) %in% Y[Y[,1L] == Env[i], 2L]]
-
-          if (!hash) {
-            Y1 <- Y[naY & Y[,1L] == Env[i], ]
-            D2 <- D[match(Y1[, 2L], rownames(D)), match(Y1[, 2L], rownames(D))]
-            q05 <- quantile(D2, 0.05)
-            sol <- optim(c(1, 1), margh.fun, y = Y1[,3L], D = D2, q = q05,
-                        method = "L-BFGS-B", lower = c(0.05, 0.05), upper = c(6, 30))
-            h[i + 1] <- sol$par[1]
-          }
-        }
-
-        GKe <- lapply(X = Map("*", D1, -h), FUN = function(x) exp(x/quantile(x, 0.05)))
-        v <- integer(nEnv)
-        mDiag <- lapply(X = 1:nEnv, FUN = function(i){v[i] <- 1; diag(v)})
-
-        ETA.tmp <- Map(kronecker, mDiag, GKe[2:length(GKe)])
-        out <- lapply(c(list(GKe[[1L]]), ETA.tmp), function(x) list(K = x, model = "RKHS"))
-      }
+    Cov = {
+      out <- list(K = ker.tmp, model = "RKHS")
     }, #DEFAULT CASE
     {
-      stop("Error, the model selected is not available ")
+      stop("Model selected is not available ")
     })
+
 
   ifelse(hasXF, #Test
          return(c(list(list(X = XF, model = "FIXED")), out)), #TRUE
@@ -220,4 +207,25 @@ GEcov <- function(Y, K, nIter = 1000, burnIn = 300, thin = 5, ...)
 
   return(fit)
 }
+
+# Bandwidth parameter for bayesian kernel regression model
+margh.fun <- function(theta, y, D, q, nu=0.0001, Sc=0.0001, nuh=NULL, Sch=NULL, prior=NULL)
+{
+  h <- theta[1]
+  phi <- theta[2]
+  Kh <- exp(-h*D/q)
+  eigenKh <- eigen(Kh)
+  nr <- length(which(eigenKh$val> 1e-10))
+  Uh <- eigenKh$vec[,1:nr]
+  Sh <- eigenKh$val[1:nr]
+  d <- t(Uh) %*% scale(y, scale=F)
+
+  Iden <- -1/2*sum(log(1+phi*Sh)) - (nu+nr-1)/2*log(Sc+sum(d^2/(1+phi*Sh)))
+  if(!is.null(prior)) lprior <- dgamma(h,nuh,Sch,log=T) else lprior <- 0
+
+  Iden <- -(Iden+lprior)
+
+  return(Iden)
+}
+
 
