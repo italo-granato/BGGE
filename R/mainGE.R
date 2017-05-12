@@ -47,8 +47,8 @@
 mainGE <- function(Y, X, XF=NULL, W=NULL, method=c("GK", "G-BLUP"), h=NULL, model = c("SM", "MM", "MDs", "MDe", "Cov"),
                    nIter = 1000, burnIn = 300, thin = 5, ...) {
   hasW <- !is.null(W)
-  subjects <- levels(Y[,2])
-  environ <- levels(Y[,1])
+  subj <- levels(Y[,2])
+  env <- levels(Y[,1])
 
   ETA.tmp <- getK(Y=Y, X=X, method = method, h=h, model = model)
 
@@ -63,12 +63,12 @@ mainGE <- function(Y, X, XF=NULL, W=NULL, method=c("GK", "G-BLUP"), h=NULL, mode
   }
 
   if (model == "Cov") {
-    tmpY <- matrix(nrow = length(subjects), ncol = length(environ), data = NA)
-    colnames(tmpY) <- environ
-    rownames(tmpY) <- subjects
+    tmpY <- matrix(nrow = length(subj), ncol = length(env), data = NA)
+    colnames(tmpY) <- env
+    rownames(tmpY) <- subj
 
     for (i in 1:length(environ)) {
-      curEnv <- Y[, 1L] == environ[i]
+      curEnv <- Y[, 1L] == env[i]
       curSub <- match(Y[curEnv, 2], rownames(tmpY))
       tmpY[curSub, i] <- Y[curEnv, 3]
     }
