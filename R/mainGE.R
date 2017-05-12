@@ -50,14 +50,14 @@ mainGE <- function(Y, X, XF=NULL, W=NULL, method=c("GK", "G-BLUP"), h=NULL, mode
   subj <- levels(Y[,2])
   env <- levels(Y[,1])
 
-  ETA.tmp <- getK(Y=Y, X=X, method = method, h=h, model = model)
+  ETA.tmp <- getK(Y = Y, X = X, method = method, h = h, model = model)
 
   if (model %in% c("MM", "MDs")) {
     if (hasW) {
       Ze <- model.matrix(~factor(Y[,1])-1)
-      Zg <- model.matrix(~factor(Y[,2])-1)
+      #Zg <- model.matrix(~factor(Y[,2])-1)
       EC <- Ze %*% (W %*% t(Ze))
-      GEC <- ETA$G * ENVc
+      GEC <- ETA.tmp$G * EC
       ETA.tmp <- c(ETA.tmp, list(EC = list(K = EC, model = "RKHS"), GEC = list(K = GEC, model = "RKHS")))
     }
   }
@@ -74,7 +74,7 @@ mainGE <- function(Y, X, XF=NULL, W=NULL, method=c("GK", "G-BLUP"), h=NULL, mode
     }
 
     fit <- GEcov(Y = tmpY, K = ETA.tmp$K, nIter = nIter, burnIn = burnIn, thin = thin,...)
-    }
+  }
   else {
     #' @importFrom BGLR BGLR
     fit <- BGLR(y = Y[,3], ETA = ETA.tmp, nIter = nIter, burnIn = burnIn, thin = thin,...)
@@ -83,52 +83,50 @@ mainGE <- function(Y, X, XF=NULL, W=NULL, method=c("GK", "G-BLUP"), h=NULL, mode
 }
 
 
-getK <- function(Y, X, XF = NULL, method = c("GK", "G-BLUP"), h = NULL, model = c("SM", "MM", "MDs", "MDe", "Cov"))
-  {
+getK <- function(Y, X, XF = NULL, method = c("GK", "G-BLUP"), h = NULL, model = c("SM", "MM", "MDs", "MDe", "Cov")) {
 
   hasXF <- !is.null(XF)
   subj <- levels(Y[,2])
   env <- levels(Y[,1])
   nEnv <- length(env)
 
-  if(hasXF){
+  if (hasXF) {
     dimXF <- dim(XF)[1]
-    if ((model == "Cov" &  dimXF != length(subj)) | (model != "Cov" & dimXF != dim(Y)[1]))
+    if ((model == "Cov" & dimXF != length(subj)) | (model != "Cov" & dimXF != dim(Y)[1]))
       stop("Matrix of fixed effects of different dimension")
   }
 
-  if(is.null(rownames(X)))
+  if (is.null(rownames(X)))
     stop("Genotype names are missing")
 
 
-  if(!all(subj %in% rownames(X)))
+  if (!all(subj %in% rownames(X)))
     stop("Not all genotypes presents in phenotypic file are in marker matrix")
+
+  #  Matrix Zg
+  switch(model,
+         SM = {
+           if (nEnv > 1)
+             stop("Single model choosen, but more than one environment is in the phenotype file")
+
+           Zg <- model.matrix( ~ factor(Y[,2L]) - 1)
+         },
+
+         Cov = {
+           Zg <- model.matrix( ~ factor(subj) - 1)
+         },{
+           Ze <- model.matrix( ~ factor(Y[,1L]) - 1)
+           Zg <- model.matrix( ~ factor(Y[,2L]) - 1)
+         })
 
   X <- X[subj,]
 
-  if(model == "SM"){
-    if (nEnv > 1)
-      stop("Single model choosen, but more than one environment is in the phenotype file")
-
-    Zg <- model.matrix( ~ factor(Y[,2L]) - 1)
-  }
-  else{
-    Ze <- model.matrix( ~ factor(Y[,1L]) - 1)
-    Zg <- model.matrix( ~ factor(Y[,2L]) - 1)
-  }
-
-  if (model == "Cov")
-    Zg <- model.matrix( ~ factor(subj) - 1)
-
   switch(method,
          'G-BLUP' = {
-           # case 'G-BLUP'...
            ker.tmp <- tcrossprod(X) / ncol(X)
            G <- Zg %*% (ker.tmp %*% t(Zg))
          },
          GK = {
-           print("Gk")
-           # case 'GK'...
            D <- (as.matrix(dist(X))) ^ 2
            naY <- !is.na(Y[, 3])
            Y0 <- Y[naY, 3]
@@ -150,7 +148,6 @@ getK <- function(Y, X, XF = NULL, method = c("GK", "G-BLUP"), h = NULL, model = 
          })
 
   switch(model,
-
     SM = {
       out <- list(K = ker.tmp, model = "RKHS")
     },
@@ -192,8 +189,7 @@ getK <- function(Y, X, XF = NULL, method = c("GK", "G-BLUP"), h = NULL, model = 
 }
 
 
-GEcov <- function(Y, K, nIter = 1000, burnIn = 300, thin = 5, ...)
-  {
+GEcov <- function(Y, K, nIter = 1000, burnIn = 300, thin = 5, ...) {
   env <- ncol(Y)
   In <- diag(x = 1, nrow = nrow(Y), ncol = nrow(Y))
 
@@ -209,21 +205,20 @@ GEcov <- function(Y, K, nIter = 1000, burnIn = 300, thin = 5, ...)
 }
 
 # Bandwidth parameter for bayesian kernel regression model
-margh.fun <- function(theta, y, D, q, nu=0.0001, Sc=0.0001, nuh=NULL, Sch=NULL, prior=NULL)
-{
+margh.fun <- function(theta, y, D, q, nu=0.0001, Sc=0.0001, nuh=NULL, Sch=NULL, prior=NULL) {
   h <- theta[1]
   phi <- theta[2]
   Kh <- exp(-h*D/q)
   eigenKh <- eigen(Kh)
-  nr <- length(which(eigenKh$val> 1e-10))
+  nr <- length(which(eigenKh$val > 1e-10))
   Uh <- eigenKh$vec[,1:nr]
   Sh <- eigenKh$val[1:nr]
-  d <- t(Uh) %*% scale(y, scale=F)
+  d <- t(Uh) %*% scale(y, scale = F)
 
-  Iden <- -1/2*sum(log(1+phi*Sh)) - (nu+nr-1)/2*log(Sc+sum(d^2/(1+phi*Sh)))
-  if(!is.null(prior)) lprior <- dgamma(h,nuh,Sch,log=T) else lprior <- 0
+  Iden <- -1/2*sum(log(1 + phi*Sh)) - (nu + nr - 1)/2*log(Sc + sum(d^2/(1 + phi*Sh)))
+  if (!is.null(prior)) lprior <- dgamma(h,nuh,Sch,log = T) else lprior <- 0
 
-  Iden <- -(Iden+lprior)
+  Iden <- -(Iden + lprior)
 
   return(Iden)
 }
