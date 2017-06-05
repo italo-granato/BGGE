@@ -43,7 +43,6 @@
 #'
 #'
 #'export
-
 mainGE <- function(Y, X, XF=NULL, W=NULL, method=c("GK", "G-BLUP"), h=NULL, model = c("SM", "MM", "MDs", "MDe", "Cov"),
                    nIter = 1000, burnIn = 300, thin = 5, ...) {
   
