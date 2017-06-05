@@ -1,3 +1,32 @@
+#' Genotype x Environment models using linear or gaussian kernel
+#'
+#' @usage mainGE <- function(Y, X, XF=NULL, W=NULL, method=c("GK", "G-BLUP"), h=NULL, model = c("SM", "MM", "MDs", "MDe", "Cov"), nIter = 150, burnIn = 50, thin = 5, ...)
+#'
+#' @param Y \code{data.frame} Phenotypic data with three columns. The first column is a \code{factor} for assigned environments,
+#' the second column is a \code{factor} for assigned individuals and the third column contains the trait of interest.
+#' @param X \code{matrix} Marker matrix with individuals in rows and marker in columns
+
+#' @details
+#' The goal is to estimate the bandwith parameter from data. The approach used is a bayesian method for selecting the bandwidth parameter \eqn{h}
+#' through the marginal distribution of \eqn{h}. For more details see Perez-Elizalde et al. (2015).
+
+
+h.fun <- function(Y, X)
+{
+  nEnv <- length(unique(Y[,1]))
+  D <- (as.matrix(dist(X))) ^ 2
+  naY <- !is.na(Y[, 3])
+  Y0 <- Y[naY, 3]
+  D0 <- kronecker(matrix(nrow = nEnv, ncol = nEnv, 1), D)
+  rownames(D0) <- rep(rownames(D), nEnv)
+  D00 <- D0[match(Y[, 2L], rownames(D0)), match(Y[, 2L], rownames(D0))]
+  sol <- optim(c(1, 1), margh.fun, y = Y0, D = D00, q = quantile(D00, 0.05),
+                 method = "L-BFGS-B", lower = c(0.05, 0.05), upper = c(6, 30))
+  h <- sol$par[1]
+  
+  return(h)
+}
+
 margh.fun <- function(theta, y, D, q, nu=0.0001, Sc=0.0001, nuh=NULL, Sch=NULL, prior=NULL)
 {
   h <- theta[1]
