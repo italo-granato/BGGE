@@ -1,16 +1,46 @@
-getK <- function(Y, X, method = c("GK", "G-BLUP"), h = NULL, model = c("SM", "MM", "MDs", "MDe", "Cov"))
+#' compute kernel matrix for GxE models
+#'
+#' @usage getK(Y, X, XF=NULL, method=c("GK", "G-BLUP"), h=1, model = c("SM", "MM", "MDs", "MDe", "Cov"))
+#'
+#' @param Y \code{data.frame} Phenotypic data with three columns. The first column is a \code{factor} for assigned environments,
+#' the second column is a \code{factor} for assigned individuals and the third column contains the trait of interest.
+#' @param X \code{matrix} Marker matrix with individuals in rows and marker in columns
+#' @param method Kernel to be used. Methods implemented are the gaussian kernel \code{GK} and the linear kernel \code{G-BLUP}
+#' @param h \code{numeric} Bandwidth parameter to create the Gaussian Kernel (GK) matrix. The default for \code{h} is 1, in case don't be provided.
+#' Estimation of h can be made using xxxx function.
+#' @param model Specifies the genotype by environment model to be fitted. \code{SM} is the single-environment main genotypic effect model,
+#' \code{MM} is the multi-environment main genotypic effect model, \code{MDs} is the multi-environment single variance genotype × environment deviation model,
+#' \code{MDe} is the multi-environment, environment-specific variance genotype × environment deviation model
+#'
+#' @details
+#' The goal is to fit genomic prediction models including GxE interaction. These models can be adjusted through two different kernels.
+#' \code{G-BLUP} creates a linear kernel resulted from the cross-product of centered and standarized marker genotypes divide by the number of markers \eqn{p}:
+#'     \eqn{G = \frac{XX^T}{p}}
+#' If \code{Gk} is choosen, a gaussian kernel is created, resulted from exponential of a genetic distance matrix based on markers scaled by its fifth percentile multiplied by the bandwidth parameter \eqn{h}
+#' which has an objective of controlling the rate of decay for correlation between individuals. Thus:
+#'  \eqn{ K (x_i, x_{i'}) = exp(-h d_{ii'}^2)}
+#' However if the bandwidth parameter is not provided, it need to be estimated from data. The approach currently working is a bayesian method for selecting the bandwidth parameter \eqn{h}
+#' through the marginal distribution of \eqn{h}. For more details see Perez-Elizalde et al. (2015).
+#' mainGE uses the packages BGLR and MTM to fit the current models:
+#' \begin{itemize}
+#' \item \code{SM}: is the single-environment main genotypic effect model - The SM model fits the data for each single environment separately.
+#' \item \code{MM}: is the multi-environment main genotypic effect model - Multi-environment model considering the main random genetic effects across environments.
+#' \item \code{MDs}: is the multi-environment single variance genotype × environment deviation model - This model is an extension of \code{MM} by adding the random interaction effect of the environments
+#' with the genetic information of genotypes.
+#' \item \code{MDe}: is the multi-environment, environment-specific variance genotype × environment deviation model - This model separates the genetic effects of markers into the main marker effects (across environments) and the specific marker effects (for each environment).
+#' \item \code{Cov}: is the multi-environment, variance-covariance environment-specific model -
+#'
+
+#' export
+getK <- function(Y, X, method = c("GK", "G-BLUP"), h = 1, model = c("SM", "MM", "MDs", "MDe", "Cov"))
 {
+  #Force to data.frame
+  Y <- as.data.frame(Y)
+  Y[colnames(Y)[1:2]] <- lapply(Y[colnames(Y)[1:2]], factor)
   
-  #hasXF <- !is.null(XF)
   subj <- levels(Y[,2])
   env <- levels(Y[,1])
   nEnv <- length(env)
-  
-  # if(hasXF){
-  #   dimXF <- dim(XF)[1]
-  #   if ((model == "Cov" &  dimXF != length(subj)) | (model != "Cov" & dimXF != dim(Y)[1]))
-  #     stop("Matrix of fixed effects of different dimension")
-  # }
   
   if(is.null(rownames(X)))
     stop("Genotype names are missing")
@@ -45,18 +75,6 @@ getK <- function(Y, X, method = c("GK", "G-BLUP"), h = NULL, model = c("SM", "MM
            print("Gk")
            # case 'GK'...
            D <- (as.matrix(dist(X))) ^ 2
-           naY <- !is.na(Y[, 3])
-           Y0 <- Y[naY, 3]
-           D0 <- kronecker(matrix(nrow = nEnv, ncol = nEnv, 1), D)
-           rownames(D0) <- rep(rownames(D), nEnv)
-           D00 <- D0[match(Y[, 2L], rownames(D0)), match(Y[, 2L], rownames(D0))]
-           
-           if (is.null(h)) {
-             sol <- optim(c(1, 1), margh.fun, y = Y0, D = D00, q = quantile(D00, 0.05),
-                          method = "L-BFGS-B", lower = c(0.05, 0.05), upper = c(6, 30))
-             h <- sol$par[1]
-           }
-           
            ker.tmp <- exp(-h * D / quantile(D, 0.05))
            G <- Zg %*% (ker.tmp %*% t(Zg))
          },
@@ -101,7 +119,5 @@ getK <- function(Y, X, method = c("GK", "G-BLUP"), h = NULL, model = c("SM", "MM
          })
   
   
-  # ifelse(hasXF, #Test
-  #        return(c(list(list(X = XF, model = "FIXED")), out)), #TRUE
   return(list(K = out, y = Y[,3]))#) #FALSE
 }
