@@ -47,7 +47,7 @@
 #' 
 #' 
 #' export
-getK <- function(Y, X, method = c("GK", "G-BLUP"), h = 1, model = c("SM", "MM", "MDs", "MDe", "Cov"))
+getK <- function(Y, X, kernel = c("GK", "GB"), K=NULL, h = 1, model = c("SM", "MM", "MDs", "MDe", "Cov"))
 {
   #Force to data.frame
   Y <- as.data.frame(Y)
@@ -57,72 +57,80 @@ getK <- function(Y, X, method = c("GK", "G-BLUP"), h = 1, model = c("SM", "MM", 
   env <- levels(Y[,1])
   nEnv <- length(env)
   
-  if(is.null(rownames(X)))
-    stop("Genotype names are missing")
-  
-  
-  if(!all(subj %in% rownames(X)))
-    Stop("Not all genotypes presents in phenotypic file are in marker matrix")
-  
-  X <- X[subj,]
   
   if(model == "SM"){
     if (nEnv > 1)
       stop("Single model choosen, but more than one environment is in the phenotype file")
     
     Zg <- model.matrix( ~ factor(Y[,2L]) - 1)
-  }
-  else{
+  }else{
     Ze <- model.matrix( ~ factor(Y[,1L]) - 1)
     Zg <- model.matrix( ~ factor(Y[,2L]) - 1)
   }
-  
+
   if (model == "Cov")
     Zg <- model.matrix( ~ factor(subj) - 1)
   
-  switch(method,
-         'G-BLUP' = {
-           # case 'G-BLUP'...
-           ker.tmp <- tcrossprod(X) / ncol(X)
-           G <- Zg %*% (ker.tmp %*% t(Zg))
-         },
-         GK = {
-           print("Gk")
-           # case 'GK'...
-           D <- (as.matrix(dist(X))) ^ 2
-           ker.tmp <- exp(-h * D / quantile(D, 0.05))
-           G <- Zg %*% (ker.tmp %*% t(Zg))
-         },
-         {
-           stop("Method selected is not available ")
-         })
+  if(is.null(K)){
+    if(is.null(rownames(X)))
+      stop("Genotype names are missing")
+    
+    if(!all(subj %in% rownames(X)))
+      stop("Not all genotypes presents in phenotypic file are in marker matrix")
+    
+    X <- X[subj,]
+    
+    switch(kernel,
+           'GB' = {
+             # case 'G-BLUP'...
+             ker.tmp <- tcrossprod(X) / ncol(X)
+             G <- Zg %*% tcrossprod(ker.tmp, Zg)
+           },
+           GK = {
+             print("Gk")
+             # case 'GK'...
+             D <- (as.matrix(dist(X))) ^ 2
+             ker.tmp <- exp(-h * D / quantile(D, 0.05))
+             G <- Zg %*% tcrossprod(ker.tmp, Zg)
+           },
+           {
+             stop("Method selected is not available ")
+           })
+    }else{
+      # Condition to check if is symmetrical
+      if(!all(subj %in% rownames(K)))
+        stop("Not all genotypes presents in phenotypic file are in the kernel matrix")
+      
+      ker.tmp <- K
+      G <- Zg %*% tcrossprod(ker.tmp, Zg)
+  }
   
   switch(model,
          
-         SM = {
+         'SM' = {
            out <- list(K = ker.tmp)
          },
          
-         MM = {
+         'MM' = {
            out <- list(G = list(K = G))
          },
          
-         MDs = {
+         'MDs' = {
            E <- tcrossprod(Ze)
            GE <- G * E
            out <- list(G = list(K = G), GE = list(K = GE))
          },
          
-         MDe = {
+         'MDe' = {
            ZEE <- matrix(data = 0, nrow = nrow(Ze), ncol = ncol(Ze))
            
-           out <- lapply(1:nEnv, function(i){
+           out.tmp <- lapply(1:nEnv, function(i){
              ZEE[,i] <- Ze[,i]
              ZEEZ <- ZEE %*% t(Ze)
              K3 <- G * ZEEZ
              return(list(K = K3))
            })
-           out <- c(list(list(K = G)), out)
+           out <- c(list(list(K = G)), out.tmp)
            names(out) <- c("mu", env)
          },
          
@@ -136,3 +144,4 @@ getK <- function(Y, X, method = c("GK", "G-BLUP"), h = 1, model = c("SM", "MM", 
   
   return(list(K = out, y = Y[,3]))#) #FALSE
 }
+
