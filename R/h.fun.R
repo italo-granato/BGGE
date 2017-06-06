@@ -10,7 +10,7 @@
 #' The goal is to estimate the bandwith parameter from data. The approach used is a bayesian method for selecting the bandwidth parameter \eqn{h}
 #' through the marginal distribution of \eqn{h}. For more details see Perez-Elizalde et al. (2015).
 
-
+#' export
 h.fun <- function(Y, X)
 {
   nEnv <- length(unique(Y[,1]))
