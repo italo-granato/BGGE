@@ -1,36 +1,51 @@
 #' compute kernel matrix for GxE models
 #'
-#' @usage getK(Y, X, XF=NULL, method=c("GK", "G-BLUP"), h=1, model = c("SM", "MM", "MDs", "MDe", "Cov"))
+#' @usage getK(Y, X, kernel = c("GK", "GB"), K = NULL, h = 1, model = c("SM", "MM", "MDs", "MDe", "Cov"))
 #'
-#' @param Y \code{data.frame} Phenotypic data with three columns. The first column is a \code{factor} for assigned environments,
-#' the second column is a \code{factor} for assigned individuals and the third column contains the trait of interest.
-#' @param X \code{matrix} Marker matrix with individuals in rows and marker in columns
-#' @param method Kernel to be used. Methods implemented are the gaussian kernel \code{GK} and the linear kernel \code{G-BLUP}
-#' @param h \code{numeric} Bandwidth parameter to create the Gaussian Kernel (GK) matrix. The default for \code{h} is 1, in case don't be provided.
-#' Estimation of h can be made using xxxx function.
-#' @param model Specifies the genotype by environment model to be fitted. \code{SM} is the single-environment main genotypic effect model,
-#' \code{MM} is the multi-environment main genotypic effect model, \code{MDs} is the multi-environment single variance genotype × environment deviation model,
-#' \code{MDe} is the multi-environment, environment-specific variance genotype × environment deviation model
+#' @param Y \code{data.frame} Phenotypic data with three columns. The first column is a factor for environments,
+#' the second column is a factor for genotype identification and the third column contains the trait of interest
+#' @param X Marker matrix with individuals in rows and marker in columns
+#' @param kernel Kernel to be used. Methods implemented are the gaussian kernel \code{GK} and the linear kernel \code{G-BLUP}
+#' @param K Single kernel matrix in case it needs to provide a different kernel from those supported
+#' @param h \code{numeric} Bandwidth parameter to create the Gaussian Kernel (GK) matrix. The default for \code{h} is 1.
+#' Estimation of h can be made using xxxx function
+#' @param model Specifies the genotype by environment model to be fitted. It currently supported the models  \code{SM}, \code{MM}, \code{MDs} and \code{MDe}. See Details
 #'
 #' @details
-#' The goal is to fit genomic prediction models including GxE interaction. These models can be adjusted through two different kernels.
-#' \code{G-BLUP} creates a linear kernel resulted from the cross-product of centered and standarized marker genotypes divide by the number of markers \eqn{p}:
+#' The goal is to create kernels used to fit GxE interaction models. These models can be adjusted using different kernels.
+#' \code{GB} creates a linear kernel resulted from the cross-product of centered and standarized marker genotypes divide by the number of markers \eqn{p}:
 #'     \eqn{G = \frac{XX^T}{p}}
-#' If \code{Gk} is choosen, a gaussian kernel is created, resulted from exponential of a genetic distance matrix based on markers scaled by its fifth percentile multiplied by the bandwidth parameter \eqn{h}
+#' Other kernel option currently supported is the Gaussian Kernel \code{Gk}, resulted from exponential of a genetic distance matrix based on markers scaled by its fifth percentile multiplied by the bandwidth parameter \eqn{h}
 #' which has an objective of controlling the rate of decay for correlation between individuals. Thus:
 #'  \eqn{ K (x_i, x_{i'}) = exp(-h d_{ii'}^2)}
-#' However if the bandwidth parameter is not provided, it need to be estimated from data. The approach currently working is a bayesian method for selecting the bandwidth parameter \eqn{h}
-#' through the marginal distribution of \eqn{h}. For more details see Perez-Elizalde et al. (2015).
-#' mainGE uses the packages BGLR and MTM to fit the current models:
+#' However other kernels can be provided through \code{K}. In this case, arguments \code{X}, \code{kernel} and \code{h} are ignored.
+#' The currently supported models for GxE kernels are:
 #' \begin{itemize}
-#' \item \code{SM}: is the single-environment main genotypic effect model - The SM model fits the data for each single environment separately.
+#' \item \code{SM}: is the single-environment main genotypic effect model - The SM model fits the data for single environment
 #' \item \code{MM}: is the multi-environment main genotypic effect model - Multi-environment model considering the main random genetic effects across environments.
 #' \item \code{MDs}: is the multi-environment single variance genotype × environment deviation model - This model is an extension of \code{MM} by adding the random interaction effect of the environments
 #' with the genetic information of genotypes.
 #' \item \code{MDe}: is the multi-environment, environment-specific variance genotype × environment deviation model - This model separates the genetic effects of markers into the main marker effects (across environments) and the specific marker effects (for each environment).
 #' \item \code{Cov}: is the multi-environment, variance-covariance environment-specific model -
-#'
-
+#' \end{itemize}
+#' 
+#' @return
+#' It returns a two-level list, which the first one has the kernels for respective model and the second element is the phenotypic value.
+#' 
+#' @examples 
+#' # create kernel matrix for model MDs using wheat dataset
+#' library(BGLR)
+#' 
+#' data(wheat)
+#' X <- scale(wheat.X, scale = T, center = T)
+#' rownames(X) <- 1:599
+#' pheno_geno <- data.frame(env = gl(n = 4, k = 599), 
+#'                GID = gl(n=599, k=1, length = 599*4),
+#'                value = as.vector(wheat.Y))
+#'  K <- getK(Y = pheno_geno, X = X, kernel = "GB", model = "MDs")              
+#' 
+#' 
+#' 
 #' export
 getK <- function(Y, X, method = c("GK", "G-BLUP"), h = 1, model = c("SM", "MM", "MDs", "MDe", "Cov"))
 {
