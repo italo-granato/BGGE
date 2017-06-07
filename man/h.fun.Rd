@@ -4,7 +4,7 @@
 \alias{h.fun}
 \title{Genotype x Environment models using linear or gaussian kernel}
 \usage{
-mainGE <- function(Y, X, XF=NULL, W=NULL, method=c("GK", "G-BLUP"), h=NULL, model = c("SM", "MM", "MDs", "MDe", "Cov"), nIter = 150, burnIn = 50, thin = 5, ...)
+h.fun(Y, X)
 }
 \arguments{
 \item{Y}{\code{data.frame} Phenotypic data with three columns. The first column is a \code{factor} for assigned environments,

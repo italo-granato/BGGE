@@ -1,6 +1,8 @@
 #' Genotype x Environment models using linear or gaussian kernel
 #'
-#' @usage mainGE <- function(Y, X, XF=NULL, W=NULL, method=c("GK", "GB"), h=1, model = c("SM", "MM", "MDs", "MDe", "Cov"), nIter = 1000, burnIn = 200, thin = 3, verbose = FALSE, ...)
+#' @usage mainGE(Y, X, XF=NULL, W=NULL, method=c("GK", "GB"),
+#'               h=1, model = c("SM", "MM", "MDs", "MDe", "Cov"),
+#'               nIter = 1000, burnIn = 300, thin = 5, verbose = FALSE, ...)
 #'
 #' @param Y \code{data.frame} Phenotypic data with three columns. The first column is a \code{factor} for assigned environments,
 #' the second column is a \code{factor} for assigned individuals and the third column contains the trait of interest.
@@ -38,7 +40,7 @@
 #' @return
 #' return variance components and 
 #'
-#' @seealso \code{\link[MTM]{MTM}}, \code{\link{getK}} and \code{\link{BLLMD}}
+#' @seealso \code{\link[MTM]{MTM}}, \code{\link{getK}} and \code{\link{BLMMD}}
 #'
 #'@examples
 #' # create kernel matrix for model MDs using wheat dataset

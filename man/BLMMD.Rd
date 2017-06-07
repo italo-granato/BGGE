@@ -4,15 +4,14 @@
 \alias{BLMMD}
 \title{Genotype x Environment models using linear or gaussian kernel}
 \usage{
-BLMMD(Y, K, XF=NULL, method=c("GK", "G-BLUP"), h=NULL, nIter = 1000, burnIn = 200, thin = 5, ...)
+BLMMD(y, K, XF = NULL, ite = 1000, burn = 200, thin = 3, verbose = FALSE, me = 1e-10)
 }
 \arguments{
+\item{y}{vector of phenotypic data}
+
 \item{XF}{\code{matrix} Design matrix (\eqn{n \times p}) for fixed effects}
 
 \item{thin}{\code{integer} Thinin interval.}
-
-\item{Y}{\code{data.frame} Phenotypic data with three columns. The first column is a \code{factor} for assigned environments,
-the second column is a \code{factor} for assigned individuals and the third column contains the trait of interest.}
 
 \item{nIter}{\code{integer} Number of iterations.}
 

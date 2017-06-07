@@ -4,7 +4,8 @@
 \alias{getK}
 \title{compute kernel matrix for GxE models}
 \usage{
-getK(Y, X, kernel = c("GK", "GB"), K = NULL, h = 1, model = c("SM", "MM", "MDs", "MDe", "Cov"))
+getK(Y, X, kernel = c("GK", "GB"), K = NULL,
+            h = 1, model = c("SM", "MM", "MDs", "MDe", "Cov"))
 }
 \arguments{
 \item{Y}{\code{data.frame} Phenotypic data with three columns. The first column is a factor for environments,

@@ -1,6 +1,7 @@
 #' compute kernel matrix for GxE models
 #'
-#' @usage getK(Y, X, kernel = c("GK", "GB"), K = NULL, h = 1, model = c("SM", "MM", "MDs", "MDe", "Cov"))
+#' @usage getK(Y, X, kernel = c("GK", "GB"), K = NULL,
+#'             h = 1, model = c("SM", "MM", "MDs", "MDe", "Cov"))
 #'
 #' @param Y \code{data.frame} Phenotypic data with three columns. The first column is a factor for environments,
 #' the second column is a factor for genotype identification and the third column contains the trait of interest

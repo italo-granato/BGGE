@@ -4,7 +4,9 @@
 \alias{mainGE}
 \title{Genotype x Environment models using linear or gaussian kernel}
 \usage{
-mainGE <- function(Y, X, XF=NULL, W=NULL, method=c("GK", "GB"), h=1, model = c("SM", "MM", "MDs", "MDe", "Cov"), nIter = 1000, burnIn = 200, thin = 3, verbose = FALSE, ...)
+mainGE(Y, X, XF=NULL, W=NULL, method=c("GK", "GB"),
+              h=1, model = c("SM", "MM", "MDs", "MDe", "Cov"),
+              nIter = 1000, burnIn = 300, thin = 5, verbose = FALSE, ...)
 }
 \arguments{
 \item{Y}{\code{data.frame} Phenotypic data with three columns. The first column is a \code{factor} for assigned environments,
@@ -74,5 +76,5 @@ fit <- mainGE(Y = pheno_geno, X = X, method = GB, model = "MDs")
 export
 }
 \seealso{
-\code{\link[MTM]{MTM}}, \code{\link{getK}} and \code{\link{BLLMD}}
+\code{\link[MTM]{MTM}}, \code{\link{getK}} and \code{\link{BLMMD}}
 }

@@ -1,9 +1,8 @@
 #' Genotype x Environment models using linear or gaussian kernel
 #'
-#' @usage BLMMD(Y, K, XF=NULL, method=c("GK", "G-BLUP"), h=NULL, nIter = 1000, burnIn = 200, thin = 5, ...)
+#' @usage BLMMD(y, K, XF = NULL, ite = 1000, burn = 200, thin = 3, verbose = FALSE, me = 1e-10)
 #'
-#' @param Y \code{data.frame} Phenotypic data with three columns. The first column is a \code{factor} for assigned environments,
-#' the second column is a \code{factor} for assigned individuals and the third column contains the trait of interest.
+#' @param y vector of phenotypic data 
 #' @param XF \code{matrix} Design matrix (\eqn{n \times p}) for fixed effects
 #' @param nIter \code{integer} Number of iterations.
 #' @param burnIn \code{integer} Number of iterations to be discarded as burn-in.
