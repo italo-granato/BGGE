@@ -1,4 +1,8 @@
 # GEmodels
 A function to fit GxE genomic models
 
-In construction...
+It is composed of three functions:
+
+1 - getK: function to 
+
+

@@ -4,7 +4,7 @@
 \alias{mainGE}
 \title{Genotype x Environment models using linear or gaussian kernel}
 \usage{
-mainGE <- function(Y, X, XF=NULL, W=NULL, method=c("GK", "G-BLUP"), h=NULL, model = c("SM", "MM", "MDs", "MDe", "Cov"), nIter = 150, burnIn = 50, thin = 5, ...)
+mainGE <- function(Y, X, XF=NULL, W=NULL, method=c("GK", "GB"), h=1, model = c("SM", "MM", "MDs", "MDe", "Cov"), nIter = 1000, burnIn = 200, thin = 3, verbose = FALSE, ...)
 }
 \arguments{
 \item{Y}{\code{data.frame} Phenotypic data with three columns. The first column is a \code{factor} for assigned environments,
@@ -14,7 +14,7 @@ the second column is a \code{factor} for assigned individuals and the third colu
 
 \item{XF}{\code{matrix} Design matrix (\eqn{n \times p}) for fixed effects}
 
-\item{W}{\code{matrix} Environmental covariance matrix. If \code{W} is provided, it can be used along with \code{MM} and \code{MDs} models. See details}
+\item{W}{\code{matrix} Environmental covariance matrix of dimension (\eqn{n \times n}). If \code{W} is provided, it can be used along with \code{MM} and \code{MDs} models. See details}
 
 \item{method}{Kernel to be used. Methods implemented are the gaussian kernel \code{Gk-EB} and the linear kernel \code{G-BLUP}}
 
@@ -34,7 +34,7 @@ then it is computed following a empirical bayesian selection method. See details
 \item{\dots}{additional arguments to be passed.}
 }
 \value{
-
+return variance components and
 }
 \description{
 Genotype x Environment models using linear or gaussian kernel
@@ -58,10 +58,21 @@ with the genetic information of genotypes.
 \item \code{Cov}: is the multi-environment, variance-covariance environment-specific model -
 }
 \examples{
+# create kernel matrix for model MDs using wheat dataset
+library(BGLR)
 
+data(wheat)
+X <- scale(wheat.X, scale = T, center = T)
+rownames(X) <- 1:599
+pheno_geno <- data.frame(env = gl(n = 4, k = 599), 
+               GID = gl(n=599, k=1, length = 599*4),
+               value = as.vector(wheat.Y))
+
+fit <- mainGE(Y = pheno_geno, X = X, method = GB, model = "MDs")
+ 
 
 export
 }
 \seealso{
-\code{\link[MTM]{MTM}}, \code{\link[BGLR]{BGLR}} and \code{\link{function}}
+\code{\link[MTM]{MTM}}, \code{\link{getK}} and \code{\link{BLLMD}}
 }

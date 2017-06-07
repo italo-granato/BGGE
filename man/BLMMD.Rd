@@ -25,8 +25,21 @@ Genotype x Environment models using linear or gaussian kernel
 }
 \details{
 The goal is to fit genomic prediction models including GxE interaction. These models can be adjusted through two different kernels.
+}
+\examples{
+# single environment model fit
+library(BGLR)
 
+data(wheat)
+X <- scale(wheat.X, scale = T, center = T)
+K <- list(tcrossprod(X)/ncol(X))
+y <- as.vector(wheat.Y[,1])
 
+fit <- BLMMD(y=y, K=K)
+
+}
+\seealso{
+\code{\link[BGLR]{BGLR}}
 
 export
 }

@@ -12,18 +12,33 @@
 #' @details
 #' The goal is to fit genomic prediction models including GxE interaction. These models can be adjusted through two different kernels.
 #'
+#' @examples 
+#' # single environment model fit
+#' library(BGLR)
+#' 
+#' data(wheat)
+#' X <- scale(wheat.X, scale = T, center = T)
+#' K <- list(tcrossprod(X)/ncol(X))
+#' y <- as.vector(wheat.Y[,1])
+#' 
+#' fit <- BLMMD(y=y, K=K)
 #'
-#'
+#' @seealso 
+#' \code{\link[BGLR]{BGLR}}
+#' 
+
 
 #' export
-BLMMD <- function(y, K, XF=NULL, ite = 1000, burn = 200, thin = 3, verbose = FALSE, me = 1e-10) {
+BLMMD <- function(y, K, XF = NULL, ite = 1000, burn = 200, thin = 3, verbose = FALSE, me = 1e-10) {
   ### PART I  - Conditional distributions functions and eigen descomposition ####
   # Conditional Distribution of tranformed genetic effects b (U'u)
+  #' @import stats
   dcondb <- function(n, media, vari) {
     sd <- sqrt(vari)
     return(rnorm(n, media, sd))
   }
   
+  #' @importFrom stats rgamma
   # Conditional distribution of compound variance of genetic effects (sigb)
   dcondsigb <- function(b, deltav, n, nu, Sc) {
     z <- sum(b ^ 2 * deltav)
@@ -64,7 +79,7 @@ BLMMD <- function(y, K, XF=NULL, ite = 1000, burn = 200, thin = 3, verbose = FAL
   if(!is.null(XF)) {
     rankXF <- qr(XF)$rank
     if (rankXF < ncol(XF) ){
-      Stop("XF is not full-column rank")
+      stop("XF is not full-column rank")
     }
     beta <- solve(crossprod(XF), crossprod(XF, y))
     if(nNa > 0){

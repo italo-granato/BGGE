@@ -1,12 +1,12 @@
 #' Genotype x Environment models using linear or gaussian kernel
 #'
-#' @usage mainGE <- function(Y, X, XF=NULL, W=NULL, method=c("GK", "G-BLUP"), h=NULL, model = c("SM", "MM", "MDs", "MDe", "Cov"), nIter = 150, burnIn = 50, thin = 5, ...)
+#' @usage mainGE <- function(Y, X, XF=NULL, W=NULL, method=c("GK", "GB"), h=1, model = c("SM", "MM", "MDs", "MDe", "Cov"), nIter = 1000, burnIn = 200, thin = 3, verbose = FALSE, ...)
 #'
 #' @param Y \code{data.frame} Phenotypic data with three columns. The first column is a \code{factor} for assigned environments,
 #' the second column is a \code{factor} for assigned individuals and the third column contains the trait of interest.
 #' @param X \code{matrix} Marker matrix with individuals in rows and marker in columns
 #' @param XF \code{matrix} Design matrix (\eqn{n \times p}) for fixed effects
-#' @param W \code{matrix} Environmental covariance matrix. If \code{W} is provided, it can be used along with \code{MM} and \code{MDs} models. See details
+#' @param W \code{matrix} Environmental covariance matrix of dimension (\eqn{n \times n}). If \code{W} is provided, it can be used along with \code{MM} and \code{MDs} models. See details
 #' @param method Kernel to be used. Methods implemented are the gaussian kernel \code{Gk-EB} and the linear kernel \code{G-BLUP}
 #' @param h \code{numeric} Bandwidth parameter to create the gaussian kernel matrix. For \code{method} \code{Gk-EB}, if \code{h} is not provided,
 #' then it is computed following a empirical bayesian selection method. See details
@@ -36,15 +36,28 @@
 #' \item \code{Cov}: is the multi-environment, variance-covariance environment-specific model -
 #'
 #' @return
+#' return variance components and 
 #'
-#' @seealso \code{\link[MTM]{MTM}}, \code{\link[BGLR]{BGLR}} and \code{\link{function}}
+#' @seealso \code{\link[MTM]{MTM}}, \code{\link{getK}} and \code{\link{BLLMD}}
 #'
 #'@examples
-#'
+#' # create kernel matrix for model MDs using wheat dataset
+#' library(BGLR)
+#' 
+#' data(wheat)
+#' X <- scale(wheat.X, scale = T, center = T)
+#' rownames(X) <- 1:599
+#' pheno_geno <- data.frame(env = gl(n = 4, k = 599), 
+#'                GID = gl(n=599, k=1, length = 599*4),
+#'                value = as.vector(wheat.Y))
+#' 
+#' fit <- mainGE(Y = pheno_geno, X = X, method = GB, model = "MDs")
+#'  
 #'
 #'export
-mainGE <- function(Y, X, XF=NULL, W=NULL, method=c("GK", "G-BLUP"), h=NULL, model = c("SM", "MM", "MDs", "MDe", "Cov"),
-                   nIter = 1000, burnIn = 300, thin = 5, ...) {
+mainGE <- function(Y, X, XF=NULL, W=NULL, method=c("GK", "GB"), h=1, model = c("SM", "MM", "MDs", "MDe", "Cov"),
+                   nIter = 1000, burnIn = 300, thin = 5, verbose = FALSE, ...) {
+  hasW <- !is.null(W)
   
   names(Y) <- c("environ", "subjects", "value")
   subj <- levels(Y$subjects)
@@ -79,8 +92,7 @@ mainGE <- function(Y, X, XF=NULL, W=NULL, method=c("GK", "G-BLUP"), h=NULL, mode
     fit <- GEcov(Y = tmpY, K = ETA.tmp$K, nIter = nIter, burnIn = burnIn, thin = thin,...)
   }
   else {
-    #' @importFrom BGLR BGLR
-    fit <- BGLR(y = Y[,3], ETA = ETA.tmp, nIter = nIter, burnIn = burnIn, thin = thin,...)
+     fit <- BLMMD(ETA = ETA.tmp, nIter = nIter, burnIn = burnIn, thin = thin, verbose = verbose, me=me)
   }
   return(fit)
 }
