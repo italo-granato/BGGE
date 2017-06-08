@@ -7,7 +7,7 @@
 #' the second column is a factor for genotype identification and the third column contains the trait of interest
 #' @param X Marker matrix with individuals in rows and marker in columns
 #' @param kernel Kernel to be used. Methods implemented are the gaussian kernel \code{GK} and the linear kernel \code{G-BLUP}
-#' @param K Single kernel matrix in case it needs to provide a different kernel from those supported
+#' @param K Single kernel matrix in case it needs to use a different kernel from those supported
 #' @param h \code{numeric} Bandwidth parameter to create the Gaussian Kernel (GK) matrix. The default for \code{h} is 1.
 #' Estimation of h can be made using xxxx function
 #' @param model Specifies the genotype by environment model to be fitted. It currently supported the models  \code{SM}, \code{MM}, \code{MDs} and \code{MDe}. See Details

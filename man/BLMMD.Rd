@@ -9,15 +9,19 @@ BLMMD(y, K, XF = NULL, ite = 1000, burn = 200, thin = 3, verbose = FALSE, me = 1
 \arguments{
 \item{y}{vector of phenotypic data}
 
+\item{K}{Kernels with effects to be fitted}
+
 \item{XF}{\code{matrix} Design matrix (\eqn{n \times p}) for fixed effects}
+
+\item{ite}{\code{integer} Number of iterations.}
+
+\item{burn}{\code{integer} Number of iterations to be discarded as burn-in.}
 
 \item{thin}{\code{integer} Thinin interval.}
 
-\item{nIter}{\code{integer} Number of iterations.}
+\item{verbose}{\code{logical} Should report be printed on screen?}
 
-\item{burnIn}{\code{integer} Number of iterations to be discarded as burn-in.}
-
-\item{\dots}{additional arguments to be passed.}
+\item{me}{\code{numeric} tolerance for zero. Default is 1e-10}
 }
 \description{
 Genotype x Environment models using linear or gaussian kernel

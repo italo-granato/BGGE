@@ -4,9 +4,9 @@
 \alias{mainGE}
 \title{Genotype x Environment models using linear or gaussian kernel}
 \usage{
-mainGE(Y, X, XF=NULL, W=NULL, method=c("GK", "GB"),
-              h=1, model = c("SM", "MM", "MDs", "MDe", "Cov"),
-              nIter = 1000, burnIn = 300, thin = 5, verbose = FALSE, ...)
+mainGE(Y, X, XF = NULL, W = NULL, kernel = c("GK", "GB"),
+              h = 1, model = c("SM", "MM", "MDs", "MDe", "Cov"),
+              nIter = 1000, burnIn = 300, thin = 5, verbose = FALSE, me = 1e-10,...)
 }
 \arguments{
 \item{Y}{\code{data.frame} Phenotypic data with three columns. The first column is a \code{factor} for assigned environments,
@@ -18,7 +18,7 @@ the second column is a \code{factor} for assigned individuals and the third colu
 
 \item{W}{\code{matrix} Environmental covariance matrix of dimension (\eqn{n \times n}). If \code{W} is provided, it can be used along with \code{MM} and \code{MDs} models. See details}
 
-\item{method}{Kernel to be used. Methods implemented are the gaussian kernel \code{Gk-EB} and the linear kernel \code{G-BLUP}}
+\item{kernel}{Kernel to be used. Methods implemented are the gaussian kernel \code{Gk-EB} and the linear kernel \code{G-BLUP}}
 
 \item{h}{\code{numeric} Bandwidth parameter to create the gaussian kernel matrix. For \code{method} \code{Gk-EB}, if \code{h} is not provided,
 then it is computed following a empirical bayesian selection method. See details}
@@ -32,6 +32,10 @@ then it is computed following a empirical bayesian selection method. See details
 \item{burnIn}{\code{integer} Number of iterations to be discarded as burn-in.}
 
 \item{thin}{\code{integer} Thinin interval.}
+
+\item{verbose}{\code{logical} Should report be printed on screen?}
+
+\item{me}{\code{numeric} tolerance for zero. Default is 1e-10}
 
 \item{\dots}{additional arguments to be passed.}
 }
@@ -58,6 +62,7 @@ mainGE uses the packages BGLR and MTM to fit the current models:
 with the genetic information of genotypes.
 \item \code{MDe}: is the multi-environment, environment-specific variance genotype × environment deviation model - This model separates the genetic effects of markers into the main marker effects (across environments) and the specific marker effects (for each environment).
 \item \code{Cov}: is the multi-environment, variance-covariance environment-specific model -
+\end{itemize}
 }
 \examples{
 # create kernel matrix for model MDs using wheat dataset

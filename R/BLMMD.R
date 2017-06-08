@@ -3,11 +3,13 @@
 #' @usage BLMMD(y, K, XF = NULL, ite = 1000, burn = 200, thin = 3, verbose = FALSE, me = 1e-10)
 #'
 #' @param y vector of phenotypic data 
+#' @param K Kernels with effects to be fitted
 #' @param XF \code{matrix} Design matrix (\eqn{n \times p}) for fixed effects
-#' @param nIter \code{integer} Number of iterations.
-#' @param burnIn \code{integer} Number of iterations to be discarded as burn-in.
+#' @param ite \code{integer} Number of iterations.
+#' @param burn \code{integer} Number of iterations to be discarded as burn-in.
 #' @param thin \code{integer} Thinin interval.
-#' @param \dots additional arguments to be passed.
+#' @param verbose \code{logical} Should report be printed on screen?
+#' @param me \code{numeric} tolerance for zero. Default is 1e-10
 #' @details
 #' The goal is to fit genomic prediction models including GxE interaction. These models can be adjusted through two different kernels.
 #'

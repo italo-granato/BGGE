@@ -15,7 +15,7 @@ the second column is a factor for genotype identification and the third column c
 
 \item{kernel}{Kernel to be used. Methods implemented are the gaussian kernel \code{GK} and the linear kernel \code{G-BLUP}}
 
-\item{K}{Single kernel matrix in case it needs to provide a different kernel from those supported}
+\item{K}{Single kernel matrix in case it needs to use a different kernel from those supported}
 
 \item{h}{\code{numeric} Bandwidth parameter to create the Gaussian Kernel (GK) matrix. The default for \code{h} is 1.
 Estimation of h can be made using xxxx function}

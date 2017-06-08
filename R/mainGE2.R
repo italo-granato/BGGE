@@ -1,15 +1,15 @@
 #' Genotype x Environment models using linear or gaussian kernel
 #'
-#' @usage mainGE(Y, X, XF=NULL, W=NULL, method=c("GK", "GB"),
-#'               h=1, model = c("SM", "MM", "MDs", "MDe", "Cov"),
-#'               nIter = 1000, burnIn = 300, thin = 5, verbose = FALSE, ...)
+#' @usage mainGE(Y, X, XF = NULL, W = NULL, kernel = c("GK", "GB"),
+#'               h = 1, model = c("SM", "MM", "MDs", "MDe", "Cov"),
+#'               nIter = 1000, burnIn = 300, thin = 5, verbose = FALSE, me = 1e-10,...)
 #'
 #' @param Y \code{data.frame} Phenotypic data with three columns. The first column is a \code{factor} for assigned environments,
 #' the second column is a \code{factor} for assigned individuals and the third column contains the trait of interest.
 #' @param X \code{matrix} Marker matrix with individuals in rows and marker in columns
 #' @param XF \code{matrix} Design matrix (\eqn{n \times p}) for fixed effects
 #' @param W \code{matrix} Environmental covariance matrix of dimension (\eqn{n \times n}). If \code{W} is provided, it can be used along with \code{MM} and \code{MDs} models. See details
-#' @param method Kernel to be used. Methods implemented are the gaussian kernel \code{Gk-EB} and the linear kernel \code{G-BLUP}
+#' @param kernel Kernel to be used. Methods implemented are the gaussian kernel \code{Gk-EB} and the linear kernel \code{G-BLUP}
 #' @param h \code{numeric} Bandwidth parameter to create the gaussian kernel matrix. For \code{method} \code{Gk-EB}, if \code{h} is not provided,
 #' then it is computed following a empirical bayesian selection method. See details
 #' @param model Specifies the genotype by environment model to be fitted. \code{SM} is the single-environment main genotypic effect model,
@@ -18,6 +18,8 @@
 #' @param nIter \code{integer} Number of iterations.
 #' @param burnIn \code{integer} Number of iterations to be discarded as burn-in.
 #' @param thin \code{integer} Thinin interval.
+#' @param verbose \code{logical} Should report be printed on screen?
+#' @param me \code{numeric} tolerance for zero. Default is 1e-10
 #' @param \dots additional arguments to be passed.
 #' @details
 #' The goal is to fit genomic prediction models including GxE interaction. These models can be adjusted through two different kernels.
@@ -36,6 +38,7 @@
 #' with the genetic information of genotypes.
 #' \item \code{MDe}: is the multi-environment, environment-specific variance genotype × environment deviation model - This model separates the genetic effects of markers into the main marker effects (across environments) and the specific marker effects (for each environment).
 #' \item \code{Cov}: is the multi-environment, variance-covariance environment-specific model -
+#' \end{itemize}
 #'
 #' @return
 #' return variance components and 
@@ -57,8 +60,8 @@
 #'  
 #'
 #'export
-mainGE <- function(Y, X, XF=NULL, W=NULL, method=c("GK", "GB"), h=1, model = c("SM", "MM", "MDs", "MDe", "Cov"),
-                   nIter = 1000, burnIn = 300, thin = 5, verbose = FALSE, ...) {
+mainGE <- function(Y, X, XF=NULL, W=NULL, kernel=c("GK", "GB"), h=1, model = c("SM", "MM", "MDs", "MDe", "Cov"),
+                   nIter = 1000, burnIn = 300, thin = 5, verbose = FALSE, me = 1e-10, ...) {
   hasW <- !is.null(W)
   
   names(Y) <- c("environ", "subjects", "value")
@@ -66,7 +69,7 @@ mainGE <- function(Y, X, XF=NULL, W=NULL, method=c("GK", "GB"), h=1, model = c("
   env <- levels(Y$environ)
   
   #setting kernels
-  setK <- getK(Y = Y, X = X, method = method, h = h, model = model)
+  setK <- getK(Y = Y, X = X, kernel = kernel, h = h, model = model)
   K <- setK$K
   y <- as.vector(setK$y)
   
@@ -75,26 +78,43 @@ mainGE <- function(Y, X, XF=NULL, W=NULL, method=c("GK", "GB"), h=1, model = c("
       Ze <- model.matrix(~factor(Y[,1])-1)
       Zg <- model.matrix(~factor(Y[,2])-1)
       EC <- Ze %*% (W %*% t(Ze))
-      GEC <- ETA$G * ENVc
+      GEC <- ETA$G * EC
       K <- c(K, list(EC = list(K = EC), GEC = list(K = GEC)))
     }
   }
   
   if (model == "Cov") {
     tmpY <- matrix(nrow = length(subj), ncol = length(env), data = NA)
-    colnames(tmpY) <- environ
-    rownames(tmpY) <- subjects
+    colnames(tmpY) <- env
+    rownames(tmpY) <- subj
     
-    for (i in 1:length(environ)) {
+    for (i in 1:length(env)) {
       curEnv <- Y$env == env[i]
       curSub <- match(Y[curEnv, 2], rownames(tmpY))
       tmpY[curSub, i] <- Y[curEnv, 3]
     }
     
-    fit <- GEcov(Y = tmpY, K = ETA.tmp$K, nIter = nIter, burnIn = burnIn, thin = thin,...)
+    fit <- GEcov(Y = tmpY, K = K, nIter = nIter, burnIn = burnIn, thin = thin,...)
   }
   else {
-     fit <- BLMMD(ETA = ETA.tmp, nIter = nIter, burnIn = burnIn, thin = thin, verbose = verbose, me=me)
+     fit <- BLMMD(y = y, K = K, XF = XF, ite = nIter, burn = burnIn, thin = thin, verbose = verbose, me=me)
   }
+  return(fit)
+}
+
+
+GEcov <- function(Y, K, nIter = 1000, burnIn = 300, thin = 5, ...)
+{
+  env <- ncol(Y)
+  In <- diag(x = 1, nrow = nrow(Y), ncol = nrow(Y))
+  
+  # How to find df0 and S0?
+  ETA <- list(list( K = K, COV = list(type = 'UN', df0 =  env, S0 = diag(env))),
+              list(K = In, COV = list(type = 'UN', df0 = env, S0 = diag(env))))
+  resCov <- list( type = 'DIAG', S0 = rep(1, env), df0 = rep(1, env))
+  
+  #' @importFrom MTM MTM
+  fit <- MTM(Y = Y, K = ETA, resCov = resCov, nIter = nIter, burnIn = burnIn, thin = thin,...)
+  
   return(fit)
 }
