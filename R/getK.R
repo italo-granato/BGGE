@@ -71,7 +71,7 @@ getK <- function(Y, X, kernel = c("GK", "GB"), K=NULL, h = 1, model = c("SM", "M
          },{
            Ze <- model.matrix(~factor(Y[,1L]) - 1)
            Zg <- model.matrix(~factor(Y[,2L]) - 1)
-         }
+         })
   
   if(is.null(K)){
     if(is.null(rownames(X)))
@@ -96,7 +96,7 @@ getK <- function(Y, X, kernel = c("GK", "GB"), K=NULL, h = 1, model = c("SM", "M
              G <- Zg %*% tcrossprod(ker.tmp, Zg)
            },
            {
-             stop("Method selected is not available ")
+             stop("kernel selected is not available. Please choose one method available or use your other kernel through argument K")
            })
     }else{
       # Condition to check if is symmetrical
