@@ -60,18 +60,18 @@ getK <- function(Y, X, kernel = c("GK", "GB"), K=NULL, h = 1, model = c("SM", "M
   nEnv <- length(env)
   
   
-  if(model == "SM"){
-    if (nEnv > 1)
-      stop("Single model choosen, but more than one environment is in the phenotype file")
-    
-    Zg <- model.matrix( ~ factor(Y[,2L]) - 1)
-  }else{
-    Ze <- model.matrix( ~ factor(Y[,1L]) - 1)
-    Zg <- model.matrix( ~ factor(Y[,2L]) - 1)
-  }
-
-  if (model == "Cov")
-    Zg <- model.matrix( ~ factor(subj) - 1)
+  switch(model,
+         'SM' = {
+           if (nEnv > 1)
+             stop("Single model choosen, but more than one environment is in the phenotype file")
+           Zg <- model.matrix(~factor(Y[,2L]) - 1)
+         },
+         'Cov' = {
+           Zg <- model.matrix(~factor(subj) - 1)
+         },{
+           Ze <- model.matrix(~factor(Y[,1L]) - 1)
+           Zg <- model.matrix(~factor(Y[,2L]) - 1)
+         }
   
   if(is.null(K)){
     if(is.null(rownames(X)))
