@@ -70,15 +70,14 @@ mainGE <- function(Y, X, XF=NULL, W=NULL, kernel=c("GK", "GB"), h=1, model = c("
   
   #setting kernels
   setK <- getK(Y = Y, X = X, kernel = kernel, h = h, model = model)
-  K <- setK$K
-  y <- as.vector(setK$y)
+  y <- as.vector(Y[,3L])
   
   if (model %in% c("MM", "MDs")) {
     if (hasW) {
       Ze <- model.matrix(~factor(Y[,1])-1)
       Zg <- model.matrix(~factor(Y[,2])-1)
       EC <- Ze %*% (W %*% t(Ze))
-      GEC <- setK$K$G * EC
+      GEC <- setK$G$K * EC
       K <- c(K, list(EC = list(K = EC), GEC = list(K = GEC)))
     }
   }

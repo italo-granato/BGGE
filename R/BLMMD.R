@@ -19,7 +19,7 @@
 #' 
 #' data(wheat)
 #' X <- scale(wheat.X, scale = TRUE, center = TRUE)
-#' K <- list(tcrossprod(X)/ncol(X))
+#' K <- list(G = list(K = tcrossprod(X)/ncol(X)))
 #' y <- as.vector(wheat.Y[,1])
 #' 
 #' fit <- BLMMD(y=y, K=K)
@@ -95,7 +95,7 @@ BLMMD <- function(y, K, XF = NULL, ite = 1000, burn = 200, thin = 3, verbose = F
   
   for (i in 1:nk) {
     Ei[[i]] <- list()
-    ei <- eig(K[[i]], me)
+    ei <- eig(K[[i]]$K, me)
     Ei[[i]]$s <- ei[[1]]
     Ei[[i]]$U <- ei[[2]]
     Ei[[i]]$tU <- t(ei[[2]])

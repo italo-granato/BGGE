@@ -35,7 +35,7 @@ library(BGLR)
 
 data(wheat)
 X <- scale(wheat.X, scale = TRUE, center = TRUE)
-K <- list(tcrossprod(X)/ncol(X))
+K <- list(G = list(K = tcrossprod(X)/ncol(X)))
 y <- as.vector(wheat.Y[,1])
 
 fit <- BLMMD(y=y, K=K)

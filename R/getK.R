@@ -88,7 +88,7 @@ getK <- function(Y, X, kernel = c("GK", "GB"), K=NULL, h = 1, model = c("SM", "M
              ker.tmp <- tcrossprod(X) / ncol(X)
              G <- Zg %*% tcrossprod(ker.tmp, Zg)
            },
-           GK = {
+           'GK' = {
              print("Gk")
              # case 'GK'...
              D <- (as.matrix(dist(X))) ^ 2
@@ -144,6 +144,6 @@ getK <- function(Y, X, kernel = c("GK", "GB"), K=NULL, h = 1, model = c("SM", "M
          })
   
   
-  return(list(K = out, y = Y[,3]))#) #FALSE
+  return(out)
 }
 
