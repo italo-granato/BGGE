@@ -96,7 +96,7 @@ mainGE <- function(Y, X, XF=NULL, W=NULL, kernel=c("GK", "GB"), h=1, model = c("
     fit <- GEcov(Y = tmpY, K = setK, nIter = nIter, burnIn = burnIn, thin = thin,...)
   }
   else {
-     fit <- BLMMD(y = y, K = K, XF = XF, ite = nIter, burn = burnIn, thin = thin, verbose = verbose, me=me)
+     fit <- BLMMD(y = y, K = setK, XF = XF, ite = nIter, burn = burnIn, thin = thin, verbose = verbose, me=me)
   }
   return(fit)
 }
