@@ -1,4 +1,4 @@
-Package: GEmodels
+Package: BLMMD
 Title: Bayesian linear models applied to GxE genome selection
 Version: 0.0.0.9000
 Authors@R: person("Italo", "Granato", email = "italo.granato@gmail.com", role = c("aut", "cre"))
