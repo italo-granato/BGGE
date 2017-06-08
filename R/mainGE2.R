@@ -50,7 +50,7 @@
 #' library(BGLR)
 #' 
 #' data(wheat)
-#' X <- scale(wheat.X, scale = T, center = T)
+#' X <- scale(wheat.X, scale = TRUE, center = TRUE)
 #' rownames(X) <- 1:599
 #' pheno_geno <- data.frame(env = gl(n = 4, k = 599), 
 #'                GID = gl(n=599, k=1, length = 599*4),
@@ -78,7 +78,7 @@ mainGE <- function(Y, X, XF=NULL, W=NULL, kernel=c("GK", "GB"), h=1, model = c("
       Ze <- model.matrix(~factor(Y[,1])-1)
       Zg <- model.matrix(~factor(Y[,2])-1)
       EC <- Ze %*% (W %*% t(Ze))
-      GEC <- ETA$G * EC
+      GEC <- setK$K$G * EC
       K <- c(K, list(EC = list(K = EC), GEC = list(K = GEC)))
     }
   }
