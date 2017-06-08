@@ -31,20 +31,21 @@ compute kernel matrix for GxE models
 \details{
 The goal is to create kernels used to fit GxE interaction models. These models can be adjusted using different kernels.
 \code{GB} creates a linear kernel resulted from the cross-product of centered and standarized marker genotypes divide by the number of markers \eqn{p}:
-    \eqn{G = \frac{XX^T}{p}}
+    \deqn{G = \frac{XX^T}{p}}
 Other kernel option currently supported is the Gaussian Kernel \code{Gk}, resulted from exponential of a genetic distance matrix based on markers scaled by its fifth percentile multiplied by the bandwidth parameter \eqn{h}
 which has an objective of controlling the rate of decay for correlation between individuals. Thus:
- \eqn{ K (x_i, x_{i'}) = exp(-h d_{ii'}^2)}
+ \deqn{ K (x_i, x_{i'}) = exp(-h d_{ii'}^2)}
 However other kernels can be provided through \code{K}. In this case, arguments \code{X}, \code{kernel} and \code{h} are ignored.
+
 The currently supported models for GxE kernels are:
-\begin{itemize}
+\itemize{
 \item \code{SM}: is the single-environment main genotypic effect model - The SM model fits the data for single environment
 \item \code{MM}: is the multi-environment main genotypic effect model - Multi-environment model considering the main random genetic effects across environments.
-\item \code{MDs}: is the multi-environment single variance genotype × environment deviation model - This model is an extension of \code{MM} by adding the random interaction effect of the environments
+\item \code{MDs}: is the multi-environment single variance genotype x environment deviation model - This model is an extension of \code{MM} by adding the random interaction effect of the environments
 with the genetic information of genotypes.
-\item \code{MDe}: is the multi-environment, environment-specific variance genotype × environment deviation model - This model separates the genetic effects of markers into the main marker effects (across environments) and the specific marker effects (for each environment).
+\item \code{MDe}: is the multi-environment, environment-specific variance genotype x environment deviation model - This model separates the genetic effects of markers into the main marker effects (across environments) and the specific marker effects (for each environment).
 \item \code{Cov}: is the multi-environment, variance-covariance environment-specific model -
-\end{itemize}
+}
 }
 \examples{
 # create kernel matrix for model MDs using wheat dataset
@@ -60,5 +61,4 @@ pheno_geno <- data.frame(env = gl(n = 4, k = 599),
 
 
 
-export
 }

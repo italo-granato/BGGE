@@ -1,4 +1,4 @@
-#' Genotype x Environment models using linear or gaussian kernel
+#' estimation \eqn{h} parameter to create gaussian kernel
 #'
 #' @usage h.fun(Y, X)
 #'
@@ -9,8 +9,21 @@
 #' @details
 #' The goal is to estimate the bandwith parameter from data. The approach used is a bayesian method for selecting the bandwidth parameter \eqn{h}
 #' through the marginal distribution of \eqn{h}. For more details see Perez-Elizalde et al. (2015).
+#' 
+#' @examples 
+#' # get h for one environment
+#' library(BGLR)
+#' 
+#' data(wheat)
+#' X <- scale(wheat.X, scale = TRUE, center = TRUE)
+#' rownames(X) <- 1:599
+#' pheno_geno <- data.frame(env = gl(n = 1, k = 599), 
+#'                GID = gl(n=599, k=1),
+#'                value = as.vector(wheat.Y[,1]))
+#' h <- h.fun(Y = pheno_geno, X = X)
+#' 
 
-#' export
+#' @export
 h.fun <- function(Y, X)
 {
   nEnv <- length(unique(Y[,1]))

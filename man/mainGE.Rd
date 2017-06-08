@@ -48,21 +48,21 @@ Genotype x Environment models using linear or gaussian kernel
 \details{
 The goal is to fit genomic prediction models including GxE interaction. These models can be adjusted through two different kernels.
 \code{G-BLUP} creates a linear kernel resulted from the cross-product of centered and standarized marker genotypes divide by the number of markers \eqn{p}:
-    \eqn{G = \frac{XX^T}{p}}
+    \deqn{G = \frac{XX^T}{p}}
 If \code{Gk} is choosen, a gaussian kernel is created, resulted from exponential of a genetic distance matrix based on markers scaled by its fifth percentile multiplied by the bandwidth parameter \eqn{h}
 which has an objective of controlling the rate of decay for correlation between individuals. Thus:
- \eqn{ K (x_i, x_{i'}) = exp(-h d_{ii'}^2)}
+ \deqn{ K (x_i, x_{i'}) = exp(-h d_{ii'}^2)}
 However if the bandwidth parameter is not provided, it need to be estimated from data. The approach currently working is a bayesian method for selecting the bandwidth parameter \eqn{h}
 through the marginal distribution of \eqn{h}. For more details see Perez-Elizalde et al. (2015).
 mainGE uses the packages BGLR and MTM to fit the current models:
-\begin{itemize}
+\itemize{
 \item \code{SM}: is the single-environment main genotypic effect model - The SM model fits the data for each single environment separately.
 \item \code{MM}: is the multi-environment main genotypic effect model - Multi-environment model considering the main random genetic effects across environments.
 \item \code{MDs}: is the multi-environment single variance genotype × environment deviation model - This model is an extension of \code{MM} by adding the random interaction effect of the environments
 with the genetic information of genotypes.
 \item \code{MDe}: is the multi-environment, environment-specific variance genotype × environment deviation model - This model separates the genetic effects of markers into the main marker effects (across environments) and the specific marker effects (for each environment).
 \item \code{Cov}: is the multi-environment, variance-covariance environment-specific model -
-\end{itemize}
+}
 }
 \examples{
 # create kernel matrix for model MDs using wheat dataset
@@ -75,10 +75,9 @@ pheno_geno <- data.frame(env = gl(n = 4, k = 599),
                GID = gl(n=599, k=1, length = 599*4),
                value = as.vector(wheat.Y))
 
-fit <- mainGE(Y = pheno_geno, X = X, method = GB, model = "MDs")
+fit <- mainGE(Y = pheno_geno, X = X, kernel = "GB", model = "MDs")
  
 
-export
 }
 \seealso{
 \code{\link[MTM]{MTM}}, \code{\link{getK}} and \code{\link{BLMMD}}

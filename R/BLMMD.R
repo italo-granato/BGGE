@@ -27,9 +27,8 @@
 #' @seealso 
 #' \code{\link[BGLR]{BGLR}}
 #' 
-
-
-#' export
+#' 
+#' @export
 BLMMD <- function(y, K, XF = NULL, ite = 1000, burn = 200, thin = 3, verbose = FALSE, me = 1e-10) {
   ### PART I  - Conditional distributions functions and eigen descomposition ####
   # Conditional Distribution of tranformed genetic effects b (U'u)

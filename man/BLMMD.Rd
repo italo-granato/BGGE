@@ -43,6 +43,4 @@ fit <- BLMMD(y=y, K=K)
 }
 \seealso{
 \code{\link[BGLR]{BGLR}}
-
-export
 }
