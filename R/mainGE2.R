@@ -64,7 +64,7 @@ mainGE <- function(Y, X, XF=NULL, W=NULL, kernel=c("GK", "GB"), h=1, model = c("
                    nIter = 1000, burnIn = 300, thin = 5, verbose = FALSE, me = 1e-10, ...) {
   hasW <- !is.null(W)
   
-  names(Y) <- c("environ", "subjects", "value")
+  names(Y) <- c("env", "subjects", "value")
   subj <- levels(Y$subjects)
   env <- levels(Y$environ)
   
@@ -81,17 +81,10 @@ mainGE <- function(Y, X, XF=NULL, W=NULL, kernel=c("GK", "GB"), h=1, model = c("
   }
   
   if (model == "Cov") {
-    tmpY <- matrix(nrow = length(subj), ncol = length(env), data = NA)
-    colnames(tmpY) <- env
-    rownames(tmpY) <- subj
+    #' @importFrom reshape2 acast
+    tmpY <- acast(Y, subjects ~ env, add.missing=TRUE, value = "value")
     
-    for (i in 1:length(env)) {
-      curEnv <- Y$env == env[i]
-      curSub <- match(Y[curEnv, 2], rownames(tmpY))
-      tmpY[curSub, i] <- Y[curEnv, 3]
-    }
-    
-    fit <- GEcov(Y = tmpY, K = setK, nIter = nIter, burnIn = burnIn, thin = thin,...)
+    fit <- GEcov(Y = tmpY, K = setK$K, nIter = nIter, burnIn = burnIn, thin = thin,...)
   }
   else {
      fit <- BLMMD(y = y, K = setK, XF = XF, ite = nIter, burn = burnIn, thin = thin, verbose = verbose, me=me)
