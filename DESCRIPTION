@@ -8,7 +8,8 @@ Description: The main goal is to fit GxE genome selection models. For this, thre
 Depends: R (>= 3.3.3)
 Imports: 
       stats,
-      MTM
+      MTM,
+      reshape2
 Suggests:
       BGLR,
       coda
