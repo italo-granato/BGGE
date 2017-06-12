@@ -2,7 +2,9 @@
 % Please edit documentation in R/h.fun.R
 \name{h.fun}
 \alias{h.fun}
-\title{estimation \eqn{h} parameter to create gaussian kernel}
+\title{Selection of bandwidth parameter \eqn{h} for kernel regression
+
+Estimation of bandwidth parameter h of a Gaussian kernel  by Bayesian method}
 \usage{
 h.fun(Y, X)
 }
@@ -10,14 +12,16 @@ h.fun(Y, X)
 \item{Y}{\code{data.frame} Phenotypic data with three columns. The first column is a \code{factor} for assigned environments,
 the second column is a \code{factor} for assigned individuals and the third column contains the trait of interest.}
 
-\item{X}{\code{matrix} Marker matrix with individuals in rows and marker in columns}
+\item{D}{A matrix with genetic distance between individuals.}
 }
-\description{
-estimation \eqn{h} parameter to create gaussian kernel
+\value{
+it returns the value for \eqn{h}
 }
 \details{
-The goal is to estimate the bandwith parameter from data. The approach used is a bayesian method for selecting the bandwidth parameter \eqn{h}
-through the marginal distribution of \eqn{h}. For more details see Perez-Elizalde et al. (2015).
+The reproducing kernel (RK) function has two components: a genetic distance between individuals based on markers and the bandwidth parameter 
+\eqn{h} that controls the rate of decay of the covariance between genotypes. Here, this parameter is estimate from data. 
+The approach used is a bayesian method for selecting the bandwidth parameter \eqn{h} through the marginal distribution of \eqn{h}. For more details see Perez-Elizalde et al. (2015).
+this function uses all dataset available. Thus, if is necessary to compute one \eqn{h} for each environment a proper subset should be used.
 }
 \examples{
 # get h for one environment
@@ -25,10 +29,18 @@ library(BGLR)
 
 data(wheat)
 X <- scale(wheat.X, scale = TRUE, center = TRUE)
+D <- (as.matrix(dist(X))) ^ 2
 rownames(X) <- 1:599
 pheno_geno <- data.frame(env = gl(n = 1, k = 599), 
                GID = gl(n=599, k=1),
                value = as.vector(wheat.Y[,1]))
-h <- h.fun(Y = pheno_geno, X = X)
+h <- h.fun(Y = pheno_geno, D = D)
 
+}
+\references{
+Pérez-Elizalde, S.,Cuevas, J.; Pérez-Rodríguez, P.; Crossa, J. (2015) Selection of The Bandwidth Parameter in a Bayesian Kernel Regression Model for Genomic-Enabled Prediction.
+J Agr Biol Envir S, 20-4:512–532
+}
+\author{
+Sergio Pérez- Elizalde, Jaime Cuevas, Paulino Pérez- Rodríguez, and José Crossa
 }
