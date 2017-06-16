@@ -1,14 +1,14 @@
 #' @title Selection of bandwidth parameter \eqn{h} for kernel regression
 #' 
-#' Estimation of bandwidth parameter h of a Gaussian kernel  by Bayesian method  
+#' @description Estimation of bandwidth parameter \eqn{h} of a Gaussian kernel by Bayesian method  
 #' 
 #' @author Sergio Pérez- Elizalde, Jaime Cuevas, Paulino Pérez- Rodríguez, and José Crossa
 #'
-#' @usage h.fun(Y, X)
+#' @usage h.fun(Y, D)
 #'
 #' @param Y \code{data.frame} Phenotypic data with three columns. The first column is a \code{factor} for assigned environments,
 #' the second column is a \code{factor} for assigned individuals and the third column contains the trait of interest.
-#' @param D A matrix with genetic distance between individuals.
+#' @param D  Genetic distance matrix between individuals.
 
 #' @details
 #' The reproducing kernel (RK) function has two components: a genetic distance between individuals based on markers and the bandwidth parameter 

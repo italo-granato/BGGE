@@ -1,8 +1,8 @@
 #' Genotype x Environment models using linear or gaussian kernel
 #'
-#' @usage mainGE(Y, X, XF = NULL, W = NULL, kernel = c("GK", "GB"),
-#'               h = 1, model = c("SM", "MM", "MDs", "MDe", "Cov"),
-#'               nIter = 1000, burnIn = 300, thin = 5, verbose = FALSE, me = 1e-10,...)
+#' @usage mainGE(Y, X, XF=NULL, W=NULL, kernel=c("GK", "GB"), K = NULL, 
+#'              h=1, model = c("SM", "MM", "MDs", "MDe", "Cov"), nIter = 1000, burnIn = 300,
+#'              thin = 5, verbose = FALSE, me = 1e-10, ...)
 #'
 #' @param Y \code{data.frame} Phenotypic data with three columns. The first column is a \code{factor} for assigned environments,
 #' the second column is a \code{factor} for assigned individuals and the third column contains the trait of interest.
@@ -10,6 +10,7 @@
 #' @param XF \code{matrix} Design matrix (\eqn{n \times p}) for fixed effects
 #' @param W \code{matrix} Environmental covariance matrix of dimension (\eqn{n \times n}). If \code{W} is provided, it can be used along with \code{MM} and \code{MDs} models. See details
 #' @param kernel Kernel to be used. Methods implemented are the gaussian kernel \code{Gk-EB} and the linear kernel \code{G-BLUP}
+#' @param K \code{matrix} Single kernel matrix in case it needs to use a different kernel from those supported
 #' @param h \code{numeric} Bandwidth parameter to create the gaussian kernel matrix. For \code{method} \code{Gk-EB}, if \code{h} is not provided,
 #' then it is computed following a empirical bayesian selection method. See details
 #' @param model Specifies the genotype by environment model to be fitted. \code{SM} is the single-environment main genotypic effect model,
@@ -22,14 +23,14 @@
 #' @param me \code{numeric} tolerance for zero. Default is 1e-10
 #' @param \dots additional arguments to be passed.
 #' @details
-#' The goal is to fit genomic prediction models including GxE interaction. These models can be adjusted through two different kernels.
-#' \code{G-BLUP} creates a linear kernel resulted from the cross-product of centered and standarized marker genotypes divide by the number of markers \eqn{p}:
+#' The goal is to fit genomic prediction models including GxE interaction. For this, is necessary kernel matrices for diferents models currently supported.
+#' These models can be adjusted using different kernels. \code{GB} creates a linear kernel resulted from the cross-product of centered and standarized marker genotypes divide by the number of markers \eqn{p}:
 #'     \deqn{G = \frac{XX^T}{p}}
-#' If \code{Gk} is choosen, a gaussian kernel is created, resulted from exponential of a genetic distance matrix based on markers scaled by its fifth percentile multiplied by the bandwidth parameter \eqn{h}
-#' which has an objective of controlling the rate of decay for correlation between individuals. Thus:
+#' Other kernel option supported is the Gaussian Kernel \code{Gk}, resulted from exponential of a genetic distance matrix based on markers scaled by its fifth percentile multiplied by the bandwidth parameter \eqn{h}.
+#' Thus:
 #'  \deqn{ K (x_i, x_{i'}) = exp(-h d_{ii'}^2)}
-#' However if the bandwidth parameter is not provided, it need to be estimated from data. The approach currently working is a bayesian method for selecting the bandwidth parameter \eqn{h}
-#' through the marginal distribution of \eqn{h}. For more details see Perez-Elizalde et al. (2015).
+#' However other kernels can be provided through \code{K}. In this case, arguments \code{X}, \code{kernel} and \code{h} are ignored. See \code{\link{h.fun}}
+#' 
 #' mainGE uses the packages BGLR and MTM to fit the current models:
 #' \itemize{
 #' \item \code{SM}: is the single-environment main genotypic effect model - The SM model fits the data for each single environment separately.
@@ -60,34 +61,34 @@
 #'  
 #'
 #'@export
-mainGE <- function(Y, X, XF=NULL, W=NULL, kernel=c("GK", "GB"), h=1, model = c("SM", "MM", "MDs", "MDe", "Cov"),
+mainGE <- function(Y, X, XF=NULL, W=NULL, kernel=c("GK", "GB"), K = NULL, h=1, model = c("SM", "MM", "MDs", "MDe", "Cov"),
                    nIter = 1000, burnIn = 300, thin = 5, verbose = FALSE, me = 1e-10, ...) {
   hasW <- !is.null(W)
   
   names(Y) <- c("env", "subjects", "value")
   subj <- levels(Y$subjects)
-  env <- levels(Y$environ)
+  env <- levels(Y$env)
   
   #setting kernels
-  setK <- getK(Y = Y, X = X, kernel = kernel, h = h, model = model)
+  setK <- getK(Y = Y, X = X, K = K, kernel = kernel, h = h, model = model)
   y <- as.vector(Y[,3L])
   
   if (model %in% c("MM", "MDs") & hasW) {
     Ze <- model.matrix(~factor(Y[,1])-1)
     Zg <- model.matrix(~factor(Y[,2])-1)
-    EC <- Ze %*% (W %*% t(Ze))
+    EC <- Ze %*% tcrossprod(W, Ze)
     GEC <- setK$G$K * EC
-    K <- c(K, list(EC = list(K = EC), GEC = list(K = GEC)))
+    setK <- c(setK, list(EC = list(K = EC), GEC = list(K = GEC)))
   }
   
   if (model == "Cov") {
     #' @importFrom reshape2 acast
     tmpY <- acast(Y, subjects ~ env, add.missing=TRUE, value = "value")
     
-    fit <- GEcov(Y = tmpY, K = setK$K, nIter = nIter, burnIn = burnIn, thin = thin,...)
+    fit <- GEcov(Y = tmpY, K = setK$G$K, nIter = nIter, burnIn = burnIn, thin = thin,...)
   }
   else {
-     fit <- BLMMD(y = y, K = setK, XF = XF, ite = nIter, burn = burnIn, thin = thin, verbose = verbose, me=me)
+     fit <- BLMMD(y = y, K = setK, XF = XF, ite = nIter, burn = burnIn, thin = thin, verbose = verbose, me = me)
   }
   return(fit)
 }

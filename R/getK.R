@@ -59,7 +59,7 @@
 #' 
 #' 
 #' @export
-getK <- function(Y, X, kernel = c("GK", "GB"), K=NULL, h = 1, model = c("SM", "MM", "MDs", "MDe", "Cov"))
+getK <- function(Y, X, kernel = c("GK", "GB"), K = NULL, h = 1, model = c("SM", "MM", "MDs", "MDe", "Cov"))
 {
   #Force to data.frame
   Y <- as.data.frame(Y)
@@ -120,7 +120,7 @@ getK <- function(Y, X, kernel = c("GK", "GB"), K=NULL, h = 1, model = c("SM", "M
   switch(model,
          
          'SM' = {
-           out <- list(K = ker.tmp)
+           out <- list(G = list(K = ker.tmp))
          },
          
          'MM' = {
@@ -147,7 +147,7 @@ getK <- function(Y, X, kernel = c("GK", "GB"), K=NULL, h = 1, model = c("SM", "M
          },
          
          Cov = {
-           out <- list(K = ker.tmp)
+           out <- list(G = list(K = ker.tmp))
          }, #DEFAULT CASE
          {
            stop("Model selected is not available ")

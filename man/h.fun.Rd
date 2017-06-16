@@ -2,20 +2,21 @@
 % Please edit documentation in R/h.fun.R
 \name{h.fun}
 \alias{h.fun}
-\title{Selection of bandwidth parameter \eqn{h} for kernel regression
-
-Estimation of bandwidth parameter h of a Gaussian kernel  by Bayesian method}
+\title{Selection of bandwidth parameter \eqn{h} for kernel regression}
 \usage{
-h.fun(Y, X)
+h.fun(Y, D)
 }
 \arguments{
 \item{Y}{\code{data.frame} Phenotypic data with three columns. The first column is a \code{factor} for assigned environments,
 the second column is a \code{factor} for assigned individuals and the third column contains the trait of interest.}
 
-\item{D}{A matrix with genetic distance between individuals.}
+\item{D}{Genetic distance matrix between individuals.}
 }
 \value{
 it returns the value for \eqn{h}
+}
+\description{
+Estimation of bandwidth parameter \eqn{h} of a Gaussian kernel by Bayesian method
 }
 \details{
 The reproducing kernel (RK) function has two components: a genetic distance between individuals based on markers and the bandwidth parameter 
