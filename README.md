@@ -3,10 +3,14 @@
 A `R` package to prepare datasets and fit GxE genomic models
 
 ## Installation
+To complete installation of BLMMD, you have to install a few packages first. You have to install `MCMCpack` and  `MTM`. However the latter is not available on [CRAN](https://cran.r-project.org/), so you need to install it via `devtools`
 
 ```R
+install.packages("MCMCpack")
 install.packages("devtools")
-devtools::install_github("italo-granato/BLMMD")
+devtools::install_github('QuantGen/MTM')
+devtools::install_github('italo-granato/BLMMD')
+
 ```
 
 ## Simple use
