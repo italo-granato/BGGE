@@ -8,8 +8,9 @@
 #' @param ite \code{integer} Number of iterations.
 #' @param burn \code{integer} Number of iterations to be discarded as burn-in.
 #' @param thin \code{integer} Thinin interval.
-#' @param verbose \code{logical} Should report be printed on screen?
-#' @param me \code{numeric} tolerance for zero. Default is 1e-10
+#' @param verbose Should iteration history be printed on screen? if TRUE or 1 then it is printed,
+#' otherwise if another number $n$ is choosen the history is printed every $n$ times. Default is FALSE.  
+#' @param me \code{numeric} Trheshold for selecting eigenvalues. Eigenvalues lower than \code{me} are discarded. Default is 1e-10.
 #' @details
 #' The goal is to fit genomic prediction models including GxE interaction. These models can be adjusted through two different kernels.
 #'
@@ -56,6 +57,12 @@ BLMMD <- function(y, K, XF = NULL, ite = 1000, burn = 200, thin = 3, verbose = F
     return(1 / rgamma(1, (n + nu) / 2, crossprod(Aux) / 2 + Sce / 2))
   }
   
+  # Conditional fixed effects
+  rmvnor <- function(n, media, sigma){
+    z <- rnorm(n)
+    return(media + crossprod(chol(sigma), z))
+  }
+  
   
   # Function for eigen descompositions
   eig <- function(K, me) {
@@ -63,10 +70,17 @@ BLMMD <- function(y, K, XF = NULL, ite = 1000, burn = 200, thin = 3, verbose = F
     fil <- which(ei$values > me)
     return(list(ei$values[fil], ei$vectors[, fil]))
   }
-  ### PART II  Preparation for Gibbs sampler ######
   
+  # verbose part I
+  if(as.numeric(verbose) != 0){
+    cat("Setting parameters...", "\n", "\n")
+  }
+  
+  ### PART II  Preparation for Gibbs sampler ######
   # Identification of NA's values
-  whichNa <- which(is.na(y))
+  y <- as.numeric(y)
+  yNA <- is.na(y)
+  whichNa <- which(yNA)
   nNa <- length(whichNa)
   mu <- mean(y, na.rm = TRUE)
   n <- length(y)
@@ -81,17 +95,16 @@ BLMMD <- function(y, K, XF = NULL, ite = 1000, burn = 200, thin = 3, verbose = F
     if (rankXF < ncol(XF) ){
       stop("XF is not full-column rank")
     }
-    beta <- solve(crossprod(XF), crossprod(XF, y))
-    if(nNa > 0){
-      XFt <- XF[whichNa,]
-    }
+    Beta <- solve(crossprod(XF), crossprod(XF, y))
+    nBeta <- length(Beta)
+    tXX <- solve(crossprod(XF))
   }
   
   # Eigen descomposition for nk Kernels
   nk <- length(K)
   nr <- numeric(nk)
   
-  Ei<-list() 
+  Ei <- list() 
   
   for (i in 1:nk) {
     Ei[[i]] <- list()
@@ -112,14 +125,20 @@ BLMMD <- function(y, K, XF = NULL, ite = 1000, burn = 200, thin = 3, verbose = F
   sigsq <- var(y)
   Sc <- rep(0.01, nk)
   sigb <- rep(0.2, nk)
-  sigsq.mcmc <- rep(0, ite)
+  sigsq.mcmc <- numeric(ite)
+  mu.mcmc <- numeric(ite)
+  if(!is.null(XF)) betaa.mcmc <- matrix(0, nrow = ite, ncol = nBeta)
+  
   sigb.mcmc <- matrix(0, nrow = ite, ncol = nk)
-  u.mcmc <- array(0, dim = c(ite, n, nk))
-  temp <- y
+  #u.mcmc <- array(0, dim = c(ite, n, nk))
+  u.mcmc <- list()
+  u.mcmc[seq(nk)] <- list(matrix(NA_integer_, nrow = ite, ncol = n))
+  
+  temp <- y - mu
   if(!is.null(XF)){
     temp <- temp - XF %*% beta
   }
-  for (k in 1:nk)  temp <- temp - u[[k]]
+  temp <- temp - Reduce('+', u)
   
   i <- 1
   
@@ -128,6 +147,22 @@ BLMMD <- function(y, K, XF = NULL, ite = 1000, burn = 200, thin = 3, verbose = F
   # Iterations of Gibbs sampler
   while (i <= ite) {
     time.init <- proc.time()[3]
+    
+    # Conditional of mu
+    temp <- temp + mu
+    mu <- rnorm(1, mean(temp), sqrt(sigsq/n))
+    mu.mcmc[i] <- mu
+    temp <- temp - mu
+    
+    # Conditional of fixed effects
+    if(!is.null(XF)){
+      temp <- temp + XF %*% Beta
+      vari <- sigsq * tXX
+      media <- tXX %*% crossprod(XF, temp)
+      Beta <- rmvnor(nBeta, media, vari)
+      betaa.mcmc[i,] <- Beta
+      temp <- temp - XF %*% Beta
+    }
     
     # Conditionals x Kernel
     for (j in 1:nk) {
@@ -147,7 +182,8 @@ BLMMD <- function(y, K, XF = NULL, ite = 1000, burn = 200, thin = 3, verbose = F
       Sc[j] <- dcondSc(nu, sigb[[j]])
       sigb[j] <- dcondsigb(b, deltav, nr[j], nu, Sc[j])
       sigb.mcmc[i, j] <- sigb[j]
-      u.mcmc[i, , j] <- u[[j]] 
+      #u.mcmc[i, , j] <- u[[j]]
+      u.mcmc[[j]][i,] <- u[[j]]
     }
     
     # Sampling residual variance 
@@ -156,19 +192,21 @@ BLMMD <- function(y, K, XF = NULL, ite = 1000, burn = 200, thin = 3, verbose = F
     tau <- 1 / sigsq
     sigsq.mcmc[i] <- sigsq
     if(nNa > 0){
-      if(!is.null(XF)){
-        XFna <- XFt %*% beta
-      }else{
-        XFna <- 0
-      }
       uhat <- Reduce('+', u)
-      y[whichNa] <- XFna + uhat[whichNa] + rnorm(n = nNa, sd = sigsq)
-      temp[whichNa] <- y[whichNa] - uhat[whichNa] - XFna
+      
+      if(!is.null(XF)){
+        aux <- XF[yNA,] %*% Beta
+      }else{
+        aux <- 0
+      }
+      
+      y[whichNa] <- aux + mu + uhat[whichNa] + rnorm(n = nNa, sd = sigsq)
+      temp[whichNa] <- y[whichNa] - uhat[whichNa] - aux - mu
     }
     
-    if(verbose){
+    if(as.numeric(verbose) != 0 & i %% as.numeric(verbose) == 0){
       time.end <- proc.time()[3]
-      cat("iter: ", i, "time: ", round(time.end-time.init, 3),"\n", "\n")
+      cat("Iter: ", i, "time: ", round(time.end - time.init, 3),"\n", "\n")
     }
     i <- i + 1
   }
@@ -180,22 +218,18 @@ BLMMD <- function(y, K, XF = NULL, ite = 1000, burn = 200, thin = 3, verbose = F
   
   # Burning and thinning chains
   sigsq.est <- mean(sigsq.mcmc[draw])
-  if(class(sigb.mcmc[draw,]) != "matrix"){
-    sigu.est <- mean(sigb.mcmc[draw, ])
-  }else{
-    sigu.est <- apply(sigb.mcmc[draw, ], 2, mean)
-  }
-  
+  sigu.est <- apply(sigb.mcmc, MARGIN = 2, FUN = function(x) mean(x[draw]))
+  mu.est <- mean(mu.mcmc[draw])
+
   u.est <- matrix(0, n, nk)
-  yHat <- mu
+  yHat <- mu.est
   if (!is.null(XF)){
-    yHat <- XF %*% beta
+    betaa.est <- colMeans(betaa.mcmc[draw,])
+    yHat <- yHat + XF %*% betaa.est
   }
   
-  for (i in 1:nk) {
-    u.est[, i] <- apply(u.mcmc[draw, , i], 2, mean)
-    yHat <- yHat + u.est[, i]
-  }
+  u.est <- sapply(u.mcmc, FUN = function(x) colMeans(x[draw, ]) )
+  yHat <- yHat + rowSums(u.est)
   
   result <- list(yHat = yHat, varE = sigsq.est, varU = sigu.est)
   

@@ -19,9 +19,10 @@ BLMMD(y, K, XF = NULL, ite = 1000, burn = 200, thin = 3, verbose = FALSE, me = 1
 
 \item{thin}{\code{integer} Thinin interval.}
 
-\item{verbose}{\code{logical} Should report be printed on screen?}
+\item{verbose}{Should iteration history be printed on screen? if TRUE or 1 then it is printed,
+otherwise if another number $n$ is choosen the history is printed every $n$ times. Default is FALSE.}
 
-\item{me}{\code{numeric} tolerance for zero. Default is 1e-10}
+\item{me}{\code{numeric} Trheshold for selecting eigenvalues. Eigenvalues lower than \code{me} are discarded. Default is 1e-10.}
 }
 \description{
 Genotype x Environment models using linear or gaussian kernel
