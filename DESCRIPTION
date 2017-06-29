@@ -5,7 +5,7 @@ Authors@R: c(person("Italo", "Granato", email = "italo.granato@gmail.com", role 
              person("Luna-Vázquez", "Francisco J.", email = "frahik@gmail.com ", role =c("aut")),
              person("Cuevas", "Jaime", email = "jaicueva@uqroo.edu.mx", role =c("aut")))
 Description: The main goal is to fit GxE genome selection models. For this, three functions were created two which is made to generate kernels and one function to fit.
-Depends: R (>= 3.3.3)
+Depends: R (>= 3.2.3)
 Imports: 
       stats,
       MTM,
