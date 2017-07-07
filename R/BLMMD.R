@@ -1,26 +1,38 @@
 #' Genotype x Environment models using linear or gaussian kernel
+#' 
+#' BLMMD function fits Bayesian regression for continuous variables through linear or Gaussian kernel.
 #'
-#' @usage BLMMD(y, K, XF = NULL, ite = 1000, burn = 200, thin = 3, verbose = FALSE, me = 1e-10)
+#' @usage BLMMD(y, K, XF = NULL, ite = 1000, burn = 200, thin = 3, verbose = FALSE, tol = 1e-10)
 #'
-#' @param y vector of phenotypic data 
-#' @param K Kernels with effects to be fitted
-#' @param XF \code{matrix} Design matrix (\eqn{n \times p}) for fixed effects
-#' @param ite \code{integer} Number of iterations.
-#' @param burn \code{integer} Number of iterations to be discarded as burn-in.
-#' @param thin \code{integer} Thinin interval.
-#' @param verbose Should iteration history be printed on screen? if TRUE or 1 then it is printed,
+#' @param y vector of phenotypic information. Should be numeric type.
+#' @param K list Specify the regression kernels (co-variance matrix) to be fitted. A number of matrices with regression kernels to be fitted should be
+#' included in this list. 
+#' @param XF matrix Design matrix (\eqn{n \times p}) for fixed effects
+#' @param ite numeric Number of iterations.
+#' @param burn numeric Number of iterations to be discarded as burn-in.
+#' @param thin numeric Thinin interval.
+#' @param verbose Should iteration history be printed on console? if TRUE or 1 then it is printed,
 #' otherwise if another number $n$ is choosen the history is printed every $n$ times. Default is FALSE.  
-#' @param me \code{numeric} Trheshold for selecting eigenvalues. Eigenvalues lower than \code{me} are discarded. Default is 1e-10.
+#' @param tol a numeric tolerance level. Eigenvalues lower than \code{tol} are discarded. Default is 1e-10.
 #' @details
-#' The goal is to fit genomic prediction models including GxE interaction. These models can be adjusted through two different kernels.
-#'
+#' The goal is to fit genomic prediction models for continuous outcomes through Gibbs sampler. BLMMD uses a proposal
+#' for dimension reduction through orthogonal transformation of observed data (y) as well as differential
+#' shrinkage as a result of the prior variance assigned to regression parameters. Further details on this approach can be found in Cuevas et al. (2014).
+#' The basic genetic model is
+#' \deqn{y = g + e}
+#' where \eqn{y} is the response, \eqn{g} is the unknown random effect and \eqn{e} is the residual effect.
+#' You can specify a number of random effects \eqn{g}, as many as desired, through a list with regression kernels related to each random effect.
+#'  @return
+#'  A list with estimated posterior means of variance components for each term in the linear model and the genetic value predicted.
+#' 
+#' 
 #' @examples 
 #' # single environment model fit
 #' library(BGLR)
 #' 
 #' data(wheat)
 #' X <- scale(wheat.X, scale = TRUE, center = TRUE)
-#' K <- list(G = list(K = tcrossprod(X)/ncol(X)))
+#' K <- list(G = tcrossprod(X)/ncol(X))
 #' y <- as.vector(wheat.Y[,1])
 #' 
 #' fit <- BLMMD(y=y, K=K)
@@ -28,9 +40,15 @@
 #' @seealso 
 #' \code{\link[BGLR]{BGLR}}
 #' 
+#' @references
+#' Cuevas, J., Pérez-Elizalde, S., Soberanis, V., Pérez-Rodríguez, P., Gianola, D., & Crossa, J. 2014.
+#' Bayesian genomic-enabled prediction as an inverse problem. G3: Genes, Genomes, Genetics, 4(10), 1991-2001.
+#' 
+#' 
+#' 
 #' 
 #' @export
-BLMMD <- function(y, K, XF = NULL, ite = 1000, burn = 200, thin = 3, verbose = FALSE, me = 1e-10) {
+BLMMD <- function(y, K, XF = NULL, ite = 1000, burn = 200, thin = 3, verbose = FALSE, tol = 1e-10) {
   ### PART I  - Conditional distributions functions and eigen descomposition ####
   # Conditional Distribution of tranformed genetic effects b (U'u)
   #' @import stats
@@ -39,7 +57,6 @@ BLMMD <- function(y, K, XF = NULL, ite = 1000, burn = 200, thin = 3, verbose = F
     return(rnorm(n, media, sd))
   }
   
-  #' @importFrom stats rgamma
   # Conditional distribution of compound variance of genetic effects (sigb)
   dcondsigb <- function(b, deltav, n, nu, Sc) {
     z <- sum(b ^ 2 * deltav)
@@ -65,9 +82,9 @@ BLMMD <- function(y, K, XF = NULL, ite = 1000, burn = 200, thin = 3, verbose = F
   
   
   # Function for eigen descompositions
-  eig <- function(K, me) {
+  eig <- function(K, tol) {
     ei <- eigen(K)
-    fil <- which(ei$values > me)
+    fil <- which(ei$values > tol)
     return(list(ei$values[fil], ei$vectors[, fil]))
   }
   
@@ -108,7 +125,7 @@ BLMMD <- function(y, K, XF = NULL, ite = 1000, burn = 200, thin = 3, verbose = F
   
   for (i in 1:nk) {
     Ei[[i]] <- list()
-    ei <- eig(K[[i]]$K, me)
+    ei <- eig(K[[i]], tol)
     Ei[[i]]$s <- ei[[1]]
     Ei[[i]]$U <- ei[[2]]
     Ei[[i]]$tU <- t(ei[[2]])
@@ -133,6 +150,7 @@ BLMMD <- function(y, K, XF = NULL, ite = 1000, burn = 200, thin = 3, verbose = F
   #u.mcmc <- array(0, dim = c(ite, n, nk))
   u.mcmc <- list()
   u.mcmc[seq(nk)] <- list(matrix(NA_integer_, nrow = ite, ncol = n))
+  names(u.mcmc) <- names(K)
   
   temp <- y - mu
   if(!is.null(XF)){
@@ -219,6 +237,7 @@ BLMMD <- function(y, K, XF = NULL, ite = 1000, burn = 200, thin = 3, verbose = F
   # Burning and thinning chains
   sigsq.est <- mean(sigsq.mcmc[draw])
   sigu.est <- apply(sigb.mcmc, MARGIN = 2, FUN = function(x) mean(x[draw]))
+  names(sigu.est) <- names(u.mcmc)
   mu.est <- mean(mu.mcmc[draw])
 
   u.est <- matrix(0, n, nk)
@@ -232,6 +251,6 @@ BLMMD <- function(y, K, XF = NULL, ite = 1000, burn = 200, thin = 3, verbose = F
   yHat <- yHat + rowSums(u.est)
   
   result <- list(yHat = yHat, varE = sigsq.est, varU = sigu.est)
-  
+  class(result) <- "BLMMD"
   return(result)
 }

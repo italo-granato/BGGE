@@ -4,31 +4,40 @@
 \alias{BLMMD}
 \title{Genotype x Environment models using linear or gaussian kernel}
 \usage{
-BLMMD(y, K, XF = NULL, ite = 1000, burn = 200, thin = 3, verbose = FALSE, me = 1e-10)
+BLMMD(y, K, XF = NULL, ite = 1000, burn = 200, thin = 3, verbose = FALSE, tol = 1e-10)
 }
 \arguments{
-\item{y}{vector of phenotypic data}
+\item{y}{vector of phenotypic information. Should be numeric type.}
 
-\item{K}{Kernels with effects to be fitted}
+\item{K}{list Specify the regression kernels (co-variance matrix) to be fitted. A number of matrices with regression kernels to be fitted should be
+included in this list.}
 
-\item{XF}{\code{matrix} Design matrix (\eqn{n \times p}) for fixed effects}
+\item{XF}{matrix Design matrix (\eqn{n \times p}) for fixed effects}
 
-\item{ite}{\code{integer} Number of iterations.}
+\item{ite}{numeric Number of iterations.}
 
-\item{burn}{\code{integer} Number of iterations to be discarded as burn-in.}
+\item{burn}{numeric Number of iterations to be discarded as burn-in.}
 
-\item{thin}{\code{integer} Thinin interval.}
+\item{thin}{numeric Thinin interval.}
 
-\item{verbose}{Should iteration history be printed on screen? if TRUE or 1 then it is printed,
+\item{verbose}{Should iteration history be printed on console? if TRUE or 1 then it is printed,
 otherwise if another number $n$ is choosen the history is printed every $n$ times. Default is FALSE.}
 
-\item{me}{\code{numeric} Trheshold for selecting eigenvalues. Eigenvalues lower than \code{me} are discarded. Default is 1e-10.}
+\item{tol}{a numeric tolerance level. Eigenvalues lower than \code{tol} are discarded. Default is 1e-10.}
 }
 \description{
-Genotype x Environment models using linear or gaussian kernel
+BLMMD function fits Bayesian regression for continuous variables through linear or Gaussian kernel.
 }
 \details{
-The goal is to fit genomic prediction models including GxE interaction. These models can be adjusted through two different kernels.
+The goal is to fit genomic prediction models for continuous outcomes through Gibbs sampler. BLMMD uses a proposal
+for dimension reduction through orthogonal transformation of observed data (y) as well as differential
+shrinkage as a result of the prior variance assigned to regression parameters. Further details on this approach can be found in Cuevas et al. (2014).
+The basic genetic model is
+\deqn{y = g + e}
+where \eqn{y} is the response, \eqn{g} is the unknown random effect and \eqn{e} is the residual effect.
+You can specify a number of random effects \eqn{g}, as many as desired, through a list with regression kernels related to each random effect.
+ @return
+ A list with estimated posterior means of variance components for each term in the linear model and the genetic value predicted.
 }
 \examples{
 # single environment model fit
@@ -36,11 +45,15 @@ library(BGLR)
 
 data(wheat)
 X <- scale(wheat.X, scale = TRUE, center = TRUE)
-K <- list(G = list(K = tcrossprod(X)/ncol(X)))
+K <- list(G = tcrossprod(X)/ncol(X))
 y <- as.vector(wheat.Y[,1])
 
 fit <- BLMMD(y=y, K=K)
 
+}
+\references{
+Cuevas, J., Pérez-Elizalde, S., Soberanis, V., Pérez-Rodríguez, P., Gianola, D., & Crossa, J. (2014).
+Bayesian genomic-enabled prediction as an inverse problem. G3: Genes, Genomes, Genetics, 4(10), 1991-2001.
 }
 \seealso{
 \code{\link[BGLR]{BGLR}}

@@ -5,12 +5,12 @@
 \title{Genotype x Environment models using linear or gaussian kernel}
 \usage{
 mainGE(Y, X, XF=NULL, W=NULL, kernel=c("GK", "GB"), K = NULL, 
-             h=1, model = c("SM", "MM", "MDs", "MDe", "Cov"), nIter = 1000, burnIn = 300,
-             thin = 5, verbose = FALSE, me = 1e-10, ...)
+             h=1, model = c("SM", "MM", "MDs", "MDe", "Cov"), ite = 1000, burn = 300,
+             thin = 5, verbose = FALSE, tol = 1e-10, ...)
 }
 \arguments{
-\item{Y}{\code{data.frame} Phenotypic data with three columns. The first column is a \code{factor} for assigned environments,
-the second column is a \code{factor} for assigned individuals and the third column contains the trait of interest.}
+\item{Y}{\code{data.frame} Phenotypic data with three columns. The first column assigns the environment,
+the second column assigns individuals and the third column contains the trait of interest.}
 
 \item{X}{\code{matrix} Marker matrix with individuals in rows and marker in columns}
 
@@ -18,31 +18,29 @@ the second column is a \code{factor} for assigned individuals and the third colu
 
 \item{W}{\code{matrix} Environmental covariance matrix of dimension (\eqn{n \times n}). If \code{W} is provided, it can be used along with \code{MM} and \code{MDs} models. See details}
 
-\item{kernel}{Kernel to be used. Methods implemented are the gaussian kernel \code{Gk-EB} and the linear kernel \code{G-BLUP}}
+\item{kernel}{regression kernel to be used. Methods currently implemented are the gaussian kernel \code{GK} and the linear kernel \code{G-BLUP}}
 
-\item{K}{\code{matrix} Single kernel matrix in case it needs to use a different kernel from those supported}
+\item{K}{\code{matrix} Single kernel matrix in case it needs to use a different kernel from those supported.}
 
-\item{h}{\code{numeric} Bandwidth parameter to create the gaussian kernel matrix. For \code{method} \code{Gk-EB}, if \code{h} is not provided,
+\item{h}{\code{numeric} Bandwidth parameter to create the gaussian kernel. For \code{method} \code{GK}, if \code{h} is not provided,
 then it is computed following a empirical bayesian selection method. See details}
 
-\item{model}{Specifies the genotype by environment model to be fitted. \code{SM} is the single-environment main genotypic effect model,
-\code{MM} is the multi-environment main genotypic effect model, \code{MDs} is the multi-environment single variance genotype × environment deviation model,
-\code{MDe} is the multi-environment, environment-specific variance genotype × environment deviation model}
+\item{model}{Specifies the genotype by environment model to be fitted. See details}
 
-\item{nIter}{\code{integer} Number of iterations.}
+\item{ite}{\code{integer} Number of iterations.}
 
-\item{burnIn}{\code{integer} Number of iterations to be discarded as burn-in.}
+\item{burn}{\code{integer} Number of iterations to be discarded as burn-in.}
 
 \item{thin}{\code{integer} Thinin interval.}
 
 \item{verbose}{\code{logical} Should report be printed on screen?}
 
-\item{me}{\code{numeric} tolerance for zero. Default is 1e-10}
+\item{tol}{\code{numeric} tolerance for zero. Default is 1e-10}
 
 \item{\dots}{additional arguments to be passed.}
 }
 \value{
-return variance components and
+A list with estimated posterior means of variance components for each term in the linear model and the genetic value predicted.
 }
 \description{
 Genotype x Environment models using linear or gaussian kernel
@@ -50,13 +48,12 @@ Genotype x Environment models using linear or gaussian kernel
 \details{
 The goal is to fit genomic prediction models including GxE interaction. For this, is necessary kernel matrices for diferents models currently supported.
 These models can be adjusted using different kernels. \code{GB} creates a linear kernel resulted from the cross-product of centered and standarized marker genotypes divide by the number of markers \eqn{p}:
-    \deqn{G = \frac{XX^T}{p}}
-Other kernel option supported is the Gaussian Kernel \code{Gk}, resulted from exponential of a genetic distance matrix based on markers scaled by its fifth percentile multiplied by the bandwidth parameter \eqn{h}.
-Thus:
+ \deqn{G = \frac{XX^T}{p}}
+Other kernel option supported is the Gaussian Kernel \code{GK}, estimated as:
  \deqn{ K (x_i, x_{i'}) = exp(-h d_{ii'}^2)}
 However other kernels can be provided through \code{K}. In this case, arguments \code{X}, \code{kernel} and \code{h} are ignored. See \code{\link{h.fun}}
 
-mainGE uses the packages BGLR and MTM to fit the current models:
+mainGE uses the BLMMD function and the package MTM to fit the current models:
 \itemize{
 \item \code{SM}: is the single-environment main genotypic effect model - The SM model fits the data for each single environment separately.
 \item \code{MM}: is the multi-environment main genotypic effect model - Multi-environment model considering the main random genetic effects across environments.

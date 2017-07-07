@@ -23,17 +23,11 @@ Estimation of h can be made using h.fun function}
 \item{model}{Specifies the genotype by environment model to be fitted. It currently supported the models  \code{SM}, \code{MM}, \code{MDs} and \code{MDe}. See Details}
 }
 \value{
-It returns a list, which has the suitable kernels for respective model. The possible kernel created are:
-\itemize{
-\item G: kernel for  main genotypic effect
-\item GE:
-
-
-
-}
+It returns a list, with suitable kernels for respectives model. It creates the kernels: \code{G} which is for main genotypic effect, created in all models;
+\code{GE} for genotype by environment effect created in the MDs model and for the \code{MDe} for each environment, one kernel is created.
 }
 \description{
-Create kernel matrix for some GxE models R
+Create kernel matrix for genomic GxE models
 }
 \details{
 The goal is to create kernels used to fit GxE interaction models. These models can be adjusted using different kernels.
@@ -41,16 +35,16 @@ The goal is to create kernels used to fit GxE interaction models. These models c
     \deqn{G = \frac{XX^T}{p}}
 Other kernel option currently supported is the Gaussian Kernel \code{Gk}, resulted from exponential of a genetic distance matrix based on markers scaled by its fifth percentile multiplied by the bandwidth parameter \eqn{h}.
 Thus:
- \deqn{ K (x_i, x_{i'}) = exp(-h d_{ii'}^2)}
+ \deqn{ K (x_i, x_{i'}) = exp(\frac{-h d_{ii'}^2}{q_{0.05}(d)})}
 However other kernels can be provided through \code{K}. In this case, arguments \code{X}, \code{kernel} and \code{h} are ignored.
 
 The currently supported models for GxE kernels are:
 \itemize{
 \item \code{SM}: is the single-environment main genotypic effect model - The SM model fits the data for single environment and only one kernel is produced. 
 \item \code{MM}: is the multi-environment main genotypic effect model - Multi-environment model considering the main random genetic effects across environments and one kernel is produced, with dimension \eqn{n \times n}, related to main effect across environments. 
-\item \code{MDs}: is the multi-environment single variance genotype x environment deviation model - This model is an extension of \code{MM} by adding the random interaction effect of the environments. Thus, two kernels are created, where the first one is related to main effect across environment,
+\item \code{MDs}: is the multi-environment single variance genotype x environment deviation model - This model is an extension of \code{MM} by adding the random interaction effect of environments with genotype information. Thus, two kernels are created, one related to main effect across environment,
 and the second kernel is associated with genotype by enviroment effect.
-\item \code{MDe}: is the multi-environment, environment-specific variance genotype x environment deviation model - This model separates the genetic effects of markers into the main marker effects and the specific marker effects (for each environment). Thus, one kernel for across environments effect is created and
+\item \code{MDe}: is the multi-environment, environment-specific variance genotype x environment deviation model - This model separates the genetic effects into the main genetic effects and the specific genetic effects (for each environment). Thus, one kernel for across environments effect is created and
 \eqn{j} kernels are created, one for each environment. 
 \item \code{Cov}: is the multi-environment, variance-covariance environment-specific model - Only one kernel is created with all unique genotypes available.
 }
@@ -69,4 +63,13 @@ pheno_geno <- data.frame(env = gl(n = 4, k = 599),
 
 
 
+}
+\references{
+Jarquín, D., J. Crossa, X. Lacaze, P. Du Cheyron, J. Daucourt, J. Lorgeou, F. Piraux, L. Guerreiro, P. Pérez, M. Calus, J. Burgueño,
+and G. de los Campos. (2014). A reaction norm model for genomic selection using high-dimensional genomic and 
+environmental data. Theor. Appl. Genet. 127(3): 595–607.
+
+López-Cruz, M., J. Crossa, D. Bonnett, S. Dreisigacker, J. Poland, J.-L. Jannink, R.P. Singh, E. Autrique,
+and G. de los Campos. (2015). Increased prediction accuracy in wheat breeding trials using a marker × environment
+interaction genomic selection model. G3: Genes, Genomes, Genetics. 5(4): 569–82.
 }
