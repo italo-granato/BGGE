@@ -25,6 +25,9 @@ otherwise if another number $n$ is choosen the history is printed every $n$ time
 
 \item{tol}{a numeric tolerance level. Eigenvalues lower than \code{tol} are discarded. Default is 1e-10.}
 }
+\value{
+A list with estimated posterior means of variance components for each term in the linear model and the genetic value predicted.
+}
 \description{
 BLMMD function fits Bayesian regression for continuous variables through linear or Gaussian kernel.
 }
@@ -36,8 +39,6 @@ The basic genetic model is
 \deqn{y = g + e}
 where \eqn{y} is the response, \eqn{g} is the unknown random effect and \eqn{e} is the residual effect.
 You can specify a number of random effects \eqn{g}, as many as desired, through a list with regression kernels related to each random effect.
- @return
- A list with estimated posterior means of variance components for each term in the linear model and the genetic value predicted.
 }
 \examples{
 # single environment model fit
@@ -52,7 +53,7 @@ fit <- BLMMD(y=y, K=K)
 
 }
 \references{
-Cuevas, J., Pérez-Elizalde, S., Soberanis, V., Pérez-Rodríguez, P., Gianola, D., & Crossa, J. (2014).
+Cuevas, J., Perez-Elizalde, S., Soberanis, V., Perez-Rodriguez, P., Gianola, D., & Crossa, J. (2014).
 Bayesian genomic-enabled prediction as an inverse problem. G3: Genes, Genomes, Genetics, 4(10), 1991-2001.
 }
 \seealso{

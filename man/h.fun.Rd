@@ -2,16 +2,16 @@
 % Please edit documentation in R/h.fun.R
 \name{h.fun}
 \alias{h.fun}
-\title{Selection of bandwidth parameter \eqn{h} for kernel regression}
+\title{Selection of bandwidth parameter (\eqn{h}) for kernel regression}
 \usage{
 h.fun(Y, D)
 }
 \arguments{
-\item{Y}{\code{data.frame} The first column is a factor for environments,
-the second column is a factor for genotype identification and the third column contains the trait of interest. Missing values
-should be assigned as NA.}
+\item{Y}{\code{data.frame} The first column is a factor denoting environments,
+the second column is a factor identifying genotypes and the third column contains the trait of interest. Missing values
+are assigned as NA.}
 
-\item{D}{Genetic distance between individuals.}
+\item{D}{\code{matrix}  Genetic distance between individuals.}
 }
 \value{
 it returns the value for \eqn{h}
@@ -21,9 +21,9 @@ Estimation of bandwidth parameter \eqn{h} of the Gaussian kernel by Bayesian met
 }
 \details{
 The reproducing kernel (RK) function has two components: a genetic distance between individuals based on markers and the bandwidth parameter 
-\eqn{h} that controls the rate of decay of the covariance between genotypes. Here, this parameter is estimate from data. 
-The approach is based on the bayesian method for selecting the bandwidth parameter \eqn{h} through its marginal distribution. For more details see Perez-Elizalde et al. (2015).
-This function uses all dataset available, however missing data are ignored to estimate the \eqn{h}. If necessary to compute one \eqn{h} for each environment a proper subset should be used.
+\eqn{h} that controls the rate of decay of the covariance between genotypes. Here, \eqn{h} is estimate from data. 
+The approach is based on the Bayesian method for selecting the bandwidth parameter \eqn{h} through its marginal distribution. For more details see Perez-Elizalde et al. (2015).
+This function uses all dataset available, however missing data are ignored. If necessary to compute one \eqn{h} for each environment a proper subset of phenotypic data should be used.
 }
 \examples{
 # get h for one environment
@@ -41,5 +41,5 @@ h <- h.fun(Y = pheno_geno, D = D)
 }
 \references{
 Pérez-Elizalde, S.,Cuevas, J.; Pérez-Rodríguez, P.; Crossa, J. (2015) Selection of The Bandwidth Parameter in a Bayesian Kernel Regression Model for Genomic-Enabled Prediction.
-J Agr Biol Envir S, 20-4:512–532
+J Agr Biol Envir S, 20-4:512-532
 }
