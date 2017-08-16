@@ -158,151 +158,246 @@ BLMMD <- function(y, K, XF = NULL, ne, ite = 1000, burn = 200, thin = 3, verbose
     y[whichNa] <- mu
   }
   
+  # name of each kernel (important to following procedures)
+  if(is.null(names(K))){
+    names(K) <- paste("K", seq(length(K)), sep = "")
+  }
+  
   # initial values of fixed effects 
   if(!is.null(XF)) {
     rankXF <- qr(XF)$rank
     if (rankXF < ncol(XF) ){
       stop("XF is not full-column rank")
     }
-    Beta <- solve(crossprod(XF), crossprod(XF, y))
-    nBeta <- length(Beta)
+    Bet <- solve(crossprod(XF), crossprod(XF, y))
+    nBet <- length(Bet)
     tXX <- solve(crossprod(XF))
   }
   
   # Eigen descomposition for nk Kernels
   nk <- length(K)
-  nr <- numeric(nk)
+  nr <- numeric(length(K))
+  typeM <- sapply(K, function(x) x$Type)
   
-  Ei <- list() 
+  if(!all(typeM %in% c("BD", "D")))
+    stop("Matrix should be of types BD or D")
   
-  for (i in 1:nk) {
-    Ei[[i]] <- list()
-    ei <- eig(K[[i]], tol)
-    Ei[[i]]$s <- ei[[1]]
-    Ei[[i]]$U <- ei[[2]]
-    Ei[[i]]$tU <- t(ei[[2]])
-    nr[i] <- length(Ei[[i]]$s)
-  }
+  if(length(ne) == 1 & any(typeM == "BD"))
+    stop("Type BD should be used only for block diagonal matrices")
   
+  Ei <- setDEC(K = K, ne = ne, tol = tol)
   
   # Initial values for Monte Carlo Markov Chains (MCMC)
+  
+  nCum <- sum(seq(1, ite) %% thin == 0)
+  
+  chain <- vector("list", length = 3)
+  names(chain) <- c("mu", "varE", "K")
+  chain$varE <- numeric(nCum)
+  chain$mu <- numeric(nCum)
+  
+  chain$K <- vector("list", length = nk)
+  names(chain$K) <- names(K)
+  chain$K[seq(nk)] <- list(list(varU = numeric(nCum)))
+  
+  cpred <- vector('list', length = nk)
+  names(cpred) <- names(K)
+  cpred[seq(nk)] <- list(U = matrix(NA_integer_, nrow = nCum, ncol = n))
+  
+  
   nu <- 3
   Sce <- (nu + 2) * var(y) / 2
   tau <- 0.01
   u <- list()
-  for (j in 1:nk) u[[j]] <- rnorm(n, 0, 1 / (2 * n))
+  for (j in 1:nk) {
+    u[[j]] <- rnorm(n, 0, 1 / (2 * n))
+    }
   sigsq <- var(y)
   Sc <- rep(0.01, nk)
   sigb <- rep(0.2, nk)
-  sigsq.mcmc <- numeric(ite)
-  mu.mcmc <- numeric(ite)
-  if(!is.null(XF)) betaa.mcmc <- matrix(0, nrow = ite, ncol = nBeta)
-  
-  sigb.mcmc <- matrix(0, nrow = ite, ncol = nk)
-  #u.mcmc <- array(0, dim = c(ite, n, nk))
-  u.mcmc <- list()
-  u.mcmc[seq(nk)] <- list(matrix(NA_integer_, nrow = ite, ncol = n))
-  names(u.mcmc) <- names(K)
   
   temp <- y - mu
-  if(!is.null(XF)){
-    temp <- temp - XF %*% beta
-  }
-  temp <- temp - Reduce('+', u)
   
+  if(!is.null(XF)){
+    B.mcmc <- matrix(0, nrow = nCum, ncol = nBet)
+    temp <- temp - XF %*% Bet
+  }
+
+  temp <- temp - Reduce('+', u)
+  nSel <- 0
   i <- 1
   
   ### PART III  Fitted model with training data ####
   
   # Iterations of Gibbs sampler
-  while (i <= ite) {
+  while(i <= ite) {
     time.init <- proc.time()[3]
     
     # Conditional of mu
     temp <- temp + mu
     mu <- rnorm(1, mean(temp), sqrt(sigsq/n))
-    mu.mcmc[i] <- mu
+    #mu.mcmc[i] <- mu
     temp <- temp - mu
     
     # Conditional of fixed effects
     if(!is.null(XF)){
-      temp <- temp + XF %*% Beta
+      temp <- temp + XF %*% Bet
       vari <- sigsq * tXX
       media <- tXX %*% crossprod(XF, temp)
-      Beta <- rmvnor(nBeta, media, vari)
-      betaa.mcmc[i,] <- Beta
-      temp <- temp - XF %*% Beta
+      Bet <- rmvnor(nBet, media, vari)
+      temp <- temp - XF %*% Bet
     }
     
     # Conditionals x Kernel
     for (j in 1:nk) {
       # Sampling genetic effects
-      temp <- temp + u[[j]]
-      d <- crossprod(Ei[[j]]$U, temp)
-      s <- Ei[[j]]$s
-      deltav <- 1 / s
-      lambda <- sigb[j]
-      vari <- s * lambda / (1 + s * lambda * tau)
-      media <- tau * vari * d
-      b <- (dcondb(nr[j], media, vari))
-      u[[j]] <-crossprod(Ei[[j]]$tU ,b)
-      temp <- temp - u[[j]]
+      
+      if(typeM[j] =="D"){
+        temp <- temp + u[[j]]
+        d <- crossprod(Ei[[j]][[1]]$U, temp)
+        s <- Ei[[j]][[1]]$s
+        deltav <- 1 / s
+        lambda <- sigb[j]
+        vari <- s * lambda / (1 + s * lambda * tau)
+        media <- tau * vari * d
+        nr <- Ei[[j]][[1]]$nr
+        b <- dcondb(nr, media, vari)
+        u[[j]] <-crossprod(Ei[[j]][[1]]$tU ,b)
+        temp <- temp - u[[j]]
+      }
+      
+      if(typeM[j] =="BD"){
+        nsk <- length(Ei[[j]])
+        
+        if(length(nsk > 1)){
+          temp <- temp + u[[j]]
+          d <- NULL
+          s <- NULL
+          neiv <- numeric(nsk)
+          pos <- matrix(NA, ncol = 2, nrow = nsk)
+          for(k in 1:nsk){
+            pos[k,] <- Ei[[j]][[k]]$pos
+            d <- c(d, crossprod(Ei[[j]][[k]]$U, temp[pos[k, 1]:pos[k, 2]]))
+            neiv[k] <- length(Ei[[j]][[k]]$s)
+            s <- c(s, Ei[[j]][[k]]$s)
+          }
+          deltav <- 1/s
+          lambda <- sigb[j]
+          vari <- s*lambda / (1+s*lambda*tau)
+          media <- tau*vari*d
+          nr <- length(s)
+          b <- dcondb(nr, media, vari)
+          
+          posf <- cumsum(neiv)
+          posi <- cumsum(c(1, neiv[-length(neiv)]))
+          utmp <- numeric(n)
+          for(k in 1:nsk){
+            utmp[pos[k, 1]:pos[k, 2] ] <- crossprod(Ei[[j]][[k]]$tU, b[posi[k]:posf[k] ])
+          }
+          u[[j]] <- utmp
+          temp <- temp - u[[j]]
+          
+        }else{
+          temp <- temp + u[[j]]
+          pos <- Ei[[j]]$pos
+          d <- crossprod(Ei[[j]][[1]]$U, temp[pos[1]:pos[2]])
+          s <- Ei[[j]][[1]]$s
+          deltav <- 1/s
+          lambda <- sigb[j]
+          vari <- s*lambda/(1+s*lambda*tau)
+          media <- tau*vari*d
+          nr <- Ei[[j]][[1]]$nr
+          b <- dcondb(nr, media, vari)
+          utmp <- numeric(n)
+          utmp[pos[1]:pos[2]] <-  crossprod(Ei[[j]][[1]]$tU, b)
+          u[[j]] <- utmp
+          temp <- temp - u[[j]]
+        }
+      }
       
       # Sampling scale hyperparameters and variance of genetic effects
-      Sc[j] <- dcondSc(nu, sigb[[j]])
-      sigb[j] <- dcondsigb(b, deltav, nr[j], nu, Sc[j])
-      sigb.mcmc[i, j] <- sigb[j]
+      Sc[j] <- dcondSc(nu, sigb[j])
+      sigb[j] <- dcondsigb(b, deltav, nr, nu, Sc[j])
+      #sigb.mcmc[i, j] <- sigb[j]
       #u.mcmc[i, , j] <- u[[j]]
-      u.mcmc[[j]][i,] <- u[[j]]
+      #u.mcmc[[j]][i,] <- u[[j]]
     }
     
     # Sampling residual variance 
     res <- temp
+    Sce <- dcondSc(nu, sigsq)
     sigsq <- dcondsigsq(res, n, nu, Sce)
     tau <- 1 / sigsq
-    sigsq.mcmc[i] <- sigsq
+    #sigsq.mcmc[i] <- sigsq
+    
+    # Predicting missing values
     if(nNa > 0){
       uhat <- Reduce('+', u)
       
       if(!is.null(XF)){
-        aux <- XF[yNA,] %*% Beta
+        aux <- XF[yNA,] %*% Bet
       }else{
         aux <- 0
       }
       
-      y[whichNa] <- aux + mu + uhat[whichNa] + rnorm(n = nNa, sd = sigsq)
+      y[whichNa] <- aux + mu + uhat[whichNa] + rnorm(n = nNa, sd = sqrt(sigsq))
       temp[whichNa] <- y[whichNa] - uhat[whichNa] - aux - mu
     }
     
+    # Separating what is for the chain
+    if(i %% thin == 0){
+      nSel <- nSel + 1
+      chain$varE[nSel] <- sigsq
+      chain$mu[nSel] <- mu
+      if(!is.null(XF)){
+        B.mcmc[nSel,] <- Bet
+      }
+      for(j in 1:nk){
+        cpred[[j]][nSel,] <- u[[j]]
+        chain$K[[j]]$varU[nSel] <- sigb[j]
+      }
+    }
+    
+    # Verbose 
     if(as.numeric(verbose) != 0 & i %% as.numeric(verbose) == 0){
       time.end <- proc.time()[3]
-      cat("Iter: ", i, "time: ", round(time.end - time.init, 3),"\n", "\n")
+      cat("Iter: ", i, "time: ", round(time.end - time.init, 3),"\n")
     }
     i <- i + 1
   }
-  
+
   
   ###### PART IV  Output ######
   #Sampling
-  draw <- seq(burn, ite, thin)
+  draw <- seq(ite)[seq(ite) %% thin == 0] > burn
   
-  # Burning and thinning chains
-  sigsq.est <- mean(sigsq.mcmc[draw])
-  sigu.est <- apply(sigb.mcmc, MARGIN = 2, FUN = function(x) mean(x[draw]))
-  names(sigu.est) <- names(u.mcmc)
-  mu.est <- mean(mu.mcmc[draw])
-
-  u.est <- matrix(0, n, nk)
+  mu.est <- mean(chain$mu[draw])
   yHat <- mu.est
+  
   if (!is.null(XF)){
-    betaa.est <- colMeans(betaa.mcmc[draw,])
-    yHat <- yHat + XF %*% betaa.est
+    B <- colMeans(B.mcmc[draw,])
+    yHat <- yHat + XF %*% B
   }
   
-  u.est <- sapply(u.mcmc, FUN = function(x) colMeans(x[draw, ]) )
+  u.est <- sapply(cpred, FUN = function(x) colMeans(x[draw, ]) )
   yHat <- yHat + rowSums(u.est)
   
-  result <- list(yHat = yHat, varE = sigsq.est, varU = sigu.est)
-  class(result) <- "BLMMD"
-  return(result)
+  out <- list()
+  out$yHat <- yHat
+  out$varE <- mean(chain$varE[draw])
+  out$varE.sd <- sd(chain$varE[draw])
+  
+  out$K <- vector('list', length = nk)
+  names(out$K) <- names(cpred)
+  for(i in 1:nk){
+    out$K[[i]]$u <- colMeans(cpred[[i]][draw, ])
+    out$K[[i]]$u.sd <- apply(cpred[[i]][draw, ], MARGIN = 2, sd)
+    out$K[[i]]$varu <- mean(chain$K[[i]]$varU[draw])
+    out$K[[i]]$varu.sd <- sd(chain$K[[i]]$varU[draw])
+  }
+  
+  out$chain <- chain
+  
+  class(out) <- "BLMMD"
+  return(out)
 }
