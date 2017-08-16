@@ -48,9 +48,8 @@
 #' 
 #' 
 #' 
-#' 
 #' @export
-BLMMD <- function(y, K, XF = NULL, ite = 1000, burn = 200, thin = 3, verbose = FALSE, tol = 1e-10) {
+BLMMD <- function(y, K, XF = NULL, ne, ite = 1000, burn = 200, thin = 3, verbose = FALSE, tol = 1e-10) {
   ### PART I  - Conditional distributions functions and eigen descomposition ####
   # Conditional Distribution of tranformed genetic effects b (U'u)
   #' @import stats
@@ -68,7 +67,7 @@ BLMMD <- function(y, K, XF = NULL, ite = 1000, burn = 200, thin = 3, verbose = F
   # Conditional distribution of scale hyperparameter chi-square (Sc) of 
   # compound variance of genetic effects. 
   dcondSc <- function(nu, sigb) {
-    return(rgamma(1, (nu + 1) / 2, (nu / (2 * sigb))))
+    return(rgamma(1, (nu ) / 2 + 1, (nu / (2 * sigb))))
   }
   
   # Conditional distribution of residual compound variance 
@@ -77,17 +76,68 @@ BLMMD <- function(y, K, XF = NULL, ite = 1000, burn = 200, thin = 3, verbose = F
   }
   
   # Conditional fixed effects
-  rmvnor <- function(n, media, sigma){
-    z <- rnorm(n)
-    return(media + crossprod(chol(sigma), z))
-  }
-  
+  rmvnor<-function(n,media,sigma){
+    z<-rnorm(n)
+    return( media + crossprod(chol(sigma), z))
+    }
   
   # Function for eigen descompositions
   eig <- function(K, tol) {
     ei <- eigen(K)
     fil <- which(ei$values > tol)
     return(list(ei$values[fil], ei$vectors[, fil]))
+  }
+  
+  # Set spectral decomposition
+  setDEC <- function(K, tol, ne){
+    
+    sK <- vector("list", length = length(K))
+    nsubK <- length(ne)
+    
+    if(nsubK > 1){
+    posf <- cumsum(ne)
+    posi <- cumsum(c(1,ne[-length(ne)]))
+    }
+    
+    for (i in 1:length(K)) {
+      if(K[[i]]$Type == "D") {
+        tmp <- list()
+        ei <- eig(K[[i]]$Kernel, tol)
+        tmp$s <- ei[[1]]
+        tmp$U <- ei[[2]]
+        tmp$tU <- t(ei[[2]])
+        tmp$nr <- length(ei[[1]])
+        tmp$type <- "D"
+        tmp$pos <- NA
+        sK[[i]] <- list(tmp)
+        }
+      
+      if(K[[i]]$Type == "BD"){
+        cont <- 0
+        tmp <- list()
+        for (j in 1:nsubK){
+          Ktemp <- K[[i]]$Kernel[(posi[j]:posf[j]), (posi[j]:posf[j])]
+          ei <- eig(Ktemp, tol)
+          if(length(ei[[1]]) != 0){
+            cont <- cont + 1
+            tmp[[cont]] <- list()
+            tmp[[cont]]$s <- ei[[1]]
+            tmp[[cont]]$U <- ei[[2]]
+            tmp[[cont]]$tU <- t(ei[[2]])
+            tmp[[cont]]$nr <- length(ei[[1]])
+            tmp[[cont]]$type <- "BD"
+            tmp[[cont]]$pos <- c(posi[j], posf[j])
+          }
+        }
+        
+        if(length(tmp) > 1){
+          sK[[i]] <- tmp
+        }else{
+          sK[[i]] <- list(tmp[[1]])
+        }
+      }
+    }
+    return(sK)
   }
   
   # verbose part I
