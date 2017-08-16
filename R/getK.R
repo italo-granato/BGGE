@@ -2,8 +2,8 @@
 #' 
 #' Create kernel matrix for genomic GxE models 
 #'
-#' @usage getK(Y, X, kernel = c("GK", "GB"), K = NULL,
-#'             h = 1, model = c("SM", "MM", "MDs", "MDe", "Cov"))
+#' @usage getK(Y, X, kernel = c("GK", "GB"), K = NULL, h = 1,
+#'              model = c("SM", "MM", "MDs", "MDe"), quantil = 0.5)
 #'
 #' @param Y \code{data.frame} Phenotypic data with three columns. The first column is a factor for environments,
 #' the second column is a factor for indentifying genotypes and the third column contains the trait of interest
@@ -11,9 +11,10 @@
 #' @param kernel Kernel to be created internally. Methods currently implemented are the Gaussian \code{GK} and the linear \code{GBLUP} kernel
 #' @param K \code{matrix} Single kernel matrix in case it needs to use a different kernel from \code{GK} or \code{GBLUP}
 #' @param h \code{numeric} Bandwidth parameter to create the Gaussian Kernel (GK) matrix. The default for \code{h} is 1.
-#' Estimation of h can be made using \code{\link{h.fun}} function
+#' Estimation of h can be made using an bayesian approach in Perez-Elizalde et al (2015)
 #' @param model Specifies the genotype \eqn{\times} environment model to be fitted. It currently supported the models  \code{SM}, \code{MM}, \code{MDs} and \code{MDe}. See Details
-#'
+#' @param quantil Specifies the quantile to create the gaussian kernel
+#' 
 #' @details
 #' The aim is to create kernels to fit GxE interaction models. These models can be fitted using different kernels.
 #' \code{GB} creates a linear kernel resulted from the cross-product of centered and standarized marker genotypes divide by the number of markers \eqn{p}:
@@ -30,8 +31,7 @@
 #' \item \code{MDs}: is the multi-environment single variance genotype x environment deviation model - This model is an extension of \code{MM} by adding the random interaction effect of environments with genotype information. Thus, two kernels are created, one related to main effect across environment,
 #' and the second kernel is associated with genotype by enviroment effect.
 #' \item \code{MDe}: is the multi-environment, environment-specific variance genotype x environment deviation model - This model separates the genetic effects into the main genetic effects and the specific genetic effects (for each environment). Thus, one kernel for across environments effect is created and
-#' \eqn{j} kernels are created, one for each environment. 
-#' \item \code{Cov}: is the multi-environment, variance-covariance environment-specific model - Only one kernel is created with all unique genotypes available.
+#' \eqn{j} kernels are created, one for each environment.
 #' }
 #' 
 #' @return
@@ -63,13 +63,13 @@
 #' 
 #' 
 #' @export
-getK <- function(Y, X, kernel = c("GK", "GB"), K = NULL, h = 1, model = c("SM", "MM", "MDs", "MDe", "Cov"))
+getK <- function(Y, X, kernel = c("GK", "GB"), K = NULL, h = 1, model = c("SM", "MM", "MDs", "MDe"), quantil = 0.5)
 {
   #Force to data.frame
   Y <- as.data.frame(Y)
   Y[colnames(Y)[1:2]] <- lapply(Y[colnames(Y)[1:2]], factor)
   
-  subj <- levels(Y[,2])
+  subjects <- levels(Y[,2])
   env <- levels(Y[,1])
   nEnv <- length(env)
   
@@ -80,7 +80,7 @@ getK <- function(Y, X, kernel = c("GK", "GB"), K = NULL, h = 1, model = c("SM", 
            Zg <- model.matrix(~factor(Y[,2L]) - 1)
          },
          'Cov' = {
-           Zg <- model.matrix(~factor(subj) - 1)
+           Zg <- model.matrix(~factor(subjects) - 1)
          },{
            Ze <- model.matrix(~factor(Y[,1L]) - 1)
            Zg <- model.matrix(~factor(Y[,2L]) - 1)
@@ -90,16 +90,17 @@ getK <- function(Y, X, kernel = c("GK", "GB"), K = NULL, h = 1, model = c("SM", 
     if(is.null(rownames(X)))
       stop("Genotype names are missing")
     
-    if(!all(subj %in% rownames(X)))
+    if(!all(subjects %in% rownames(X)))
       stop("Not all genotypes presents in the phenotypic file are in marker matrix")
     
-    X <- X[subj,]
+    X <- X[subjects,]
     
     switch(kernel,
            'GB' = {
              # case 'G-BLUP'...
              ker.tmp <- tcrossprod(X) / ncol(X)
-             G <- list(Zg %*% tcrossprod(ker.tmp, Zg))
+             #G <- list(Zg %*% tcrossprod(ker.tmp, Zg))
+             G <- list(list(Kernel = Zg %*% tcrossprod(ker.tmp, Zg), Type = "D"))
            },
            'GK' = {
              # case 'GK'...
@@ -107,33 +108,39 @@ getK <- function(Y, X, kernel = c("GK", "GB"), K = NULL, h = 1, model = c("SM", 
              
              G <- list()
              for(i in 1:length(h)){
-               ker.tmp <- exp(-h[i] * D / quantile(D, 0.05))
-               G[[i]] <- Zg %*% tcrossprod(ker.tmp, Zg)
+               ker.tmp <- exp(-h[i] * D / quantile(D, quantil))
+               #G[[i]] <- Zg %*% tcrossprod(ker.tmp, Zg)
+               G[[i]] <- list(Kernel = Zg %*% tcrossprod(ker.tmp, Zg), Type = "D")
                }
              },
            {
              stop("kernel selected is not available. Please choose one method available or make available other kernel through argument K")
            })
     }else{
-      # Condition to check if is symmetrical
-      if(!all(subj %in% rownames(K)))
+      if(is.null(rownames(K)) | is.null(colnames(K)))
+        stop("Genotype names are missing")
+      
+      # Condition to check if all genotypes name are compatible
+      if(!all(subjects %in% rownames(K)))
         stop("Not all genotypes presents in phenotypic file are in the kernel matrix")
       
+      newOr <- match(rownames(K), subjects) # new order for rows
+      newOc <- match(colnames(K), subjects) # new order for columns
+      
+      K <- K[newOr, newOc] # reordering kernel
+      
       ker.tmp <- K
-      G <- list(Zg %*% tcrossprod(ker.tmp, Zg))
+      #G <- list(Zg %*% tcrossprod(ker.tmp, Zg))
+      G <- list(Kernel = Zg %*% tcrossprod(ker.tmp, Zg), Type = "D")
   }
   
-  if(length(G) > 1){
-    names(G) <- paste("G", seq(length(G)), sep = "")  
-  }else{
-    names(G) <- "G"
-  }
-  
+    names(G) <- if(length(G) > 1) paste("G", seq(length(G)), sep ="_") else "G"
+
   switch(model,
-         
+       
          'SM' = {
            out <- G
-         },
+         }, 
          
          'MM' = {
            out <- G
@@ -141,8 +148,9 @@ getK <- function(Y, X, kernel = c("GK", "GB"), K = NULL, h = 1, model = c("SM", 
          
          'MDs' = {
            E <- tcrossprod(Ze)
-           GE <- Map('*', G, list(E))
-           names(GE) <- paste("GE", seq(length(G)), sep = "") 
+           #GE <- Map('*', G, list(E))
+           GE <- lapply(G, function(x) list(Kernel = x$K * E, Type = "BD"))
+           names(GE) <- if(length(G) > 1) paste("GE", seq(length(G)), sep ="_") else "GE"
            out <- c(G, GE)
          },
          
@@ -155,17 +163,15 @@ getK <- function(Y, X, kernel = c("GK", "GB"), K = NULL, h = 1, model = c("SM", 
            out.tmp <- c(out.tmp, lapply(1:nEnv, function(i){
              ZEE[,i] <- Ze[,i]
              ZEEZ <- ZEE %*% t(Ze)
-             K3 <- G[[j]] * ZEEZ
+             #K3 <- G[[j]] * ZEEZ
+             K3 <- list(Kernel = G[[j]]$K * ZEEZ, Type = "BD")
              return(K3)
            }))
            }
-           names(out.tmp) <- paste(rep(env, length(G)), rep(1:length(G), each = nEnv), sep = "_")
+           name.tmp <- paste(rep(env, length(G)), rep(1:length(G), each = nEnv), sep = "_")
+           names(out.tmp) <- if(length(G) > 1) name.tmp else env
            out <- c(G, out.tmp)
-           },
-         
-         Cov = {
-           out <- G
-         }, #DEFAULT CASE
+           }, #DEFAULT CASE
          {
            stop("Model selected is not available ")
          })
@@ -173,4 +179,3 @@ getK <- function(Y, X, kernel = c("GK", "GB"), K = NULL, h = 1, model = c("SM", 
   
   return(out)
 }
-
