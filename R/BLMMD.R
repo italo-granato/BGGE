@@ -2,12 +2,13 @@
 #' 
 #' BLMMD function fits Bayesian regression for continuous variables through linear or Gaussian kernel.
 #'
-#' @usage BLMMD(y, K, XF = NULL, ite = 1000, burn = 200, thin = 3, verbose = FALSE, tol = 1e-10)
+#' @usage BLMMD(y, K, XF = NULL, ne, ite = 1000, burn = 200, thin = 3, verbose = FALSE, tol = 1e-10)
 #'
 #' @param y vector of phenotypic information. Should be numeric type.
 #' @param K list Specify the regression kernels (co-variance matrix) to be fitted. A number of matrices with regression kernels to be fitted should be
 #' included in this list. 
 #' @param XF matrix Design matrix (\eqn{n \times p}) for fixed effects
+#' @param ne vector Number of genotypes by environment
 #' @param ite numeric Number of iterations.
 #' @param burn numeric Number of iterations to be discarded as burn-in.
 #' @param thin numeric Thinin interval.
@@ -33,10 +34,10 @@
 #' 
 #' data(wheat)
 #' X <- scale(wheat.X, scale = TRUE, center = TRUE)
-#' K <- list(G = tcrossprod(X)/ncol(X))
+#' K <- list(G = list(Kernel = tcrossprod(X)/ncol(X), Type = "D"))
 #' y <- as.vector(wheat.Y[,1])
 #' 
-#' fit <- BLMMD(y=y, K=K)
+#' fit <- BLMMD(y=y, K=K, ne = 599)
 #'
 #' @seealso 
 #' \code{\link[BGLR]{BGLR}}
