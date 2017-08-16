@@ -4,7 +4,7 @@
 \alias{BLMMD}
 \title{Genotype x Environment models using linear or gaussian kernel}
 \usage{
-BLMMD(y, K, XF = NULL, ite = 1000, burn = 200, thin = 3, verbose = FALSE, tol = 1e-10)
+BLMMD(y, K, XF = NULL, ne, ite = 1000, burn = 200, thin = 3, verbose = FALSE, tol = 1e-10)
 }
 \arguments{
 \item{y}{vector of phenotypic information. Should be numeric type.}
@@ -13,6 +13,8 @@ BLMMD(y, K, XF = NULL, ite = 1000, burn = 200, thin = 3, verbose = FALSE, tol = 
 included in this list.}
 
 \item{XF}{matrix Design matrix (\eqn{n \times p}) for fixed effects}
+
+\item{ne}{vector Number of genotypes by environment}
 
 \item{ite}{numeric Number of iterations.}
 
@@ -46,10 +48,10 @@ library(BGLR)
 
 data(wheat)
 X <- scale(wheat.X, scale = TRUE, center = TRUE)
-K <- list(G = tcrossprod(X)/ncol(X))
+K <- list(G = list(Kernel = tcrossprod(X)/ncol(X), Type = "D"))
 y <- as.vector(wheat.Y[,1])
 
-fit <- BLMMD(y=y, K=K)
+fit <- BLMMD(y=y, K=K, ne = 599)
 
 }
 \references{

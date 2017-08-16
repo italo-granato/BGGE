@@ -4,8 +4,8 @@
 \alias{getK}
 \title{Kernel matrix for GxE models}
 \usage{
-getK(Y, X, kernel = c("GK", "GB"), K = NULL,
-            h = 1, model = c("SM", "MM", "MDs", "MDe", "Cov"))
+getK(Y, X, kernel = c("GK", "GB"), K = NULL, h = 1,
+             model = c("SM", "MM", "MDs", "MDe"), quantil = 0.5)
 }
 \arguments{
 \item{Y}{\code{data.frame} Phenotypic data with three columns. The first column is a factor for environments,
@@ -18,9 +18,11 @@ the second column is a factor for indentifying genotypes and the third column co
 \item{K}{\code{matrix} Single kernel matrix in case it needs to use a different kernel from \code{GK} or \code{GBLUP}}
 
 \item{h}{\code{numeric} Bandwidth parameter to create the Gaussian Kernel (GK) matrix. The default for \code{h} is 1.
-Estimation of h can be made using \code{\link{h.fun}} function}
+Estimation of h can be made using an bayesian approach in Perez-Elizalde et al (2015)}
 
 \item{model}{Specifies the genotype \eqn{\times} environment model to be fitted. It currently supported the models  \code{SM}, \code{MM}, \code{MDs} and \code{MDe}. See Details}
+
+\item{quantil}{Specifies the quantile to create the gaussian kernel}
 }
 \value{
 It returns a list, with suitable kernels for each model. It creates the kernels: \code{G} which is for main genotypic effect, included in all models;
@@ -45,8 +47,7 @@ The currently supported models for GxE kernels are:
 \item \code{MDs}: is the multi-environment single variance genotype x environment deviation model - This model is an extension of \code{MM} by adding the random interaction effect of environments with genotype information. Thus, two kernels are created, one related to main effect across environment,
 and the second kernel is associated with genotype by enviroment effect.
 \item \code{MDe}: is the multi-environment, environment-specific variance genotype x environment deviation model - This model separates the genetic effects into the main genetic effects and the specific genetic effects (for each environment). Thus, one kernel for across environments effect is created and
-\eqn{j} kernels are created, one for each environment. 
-\item \code{Cov}: is the multi-environment, variance-covariance environment-specific model - Only one kernel is created with all unique genotypes available.
+\eqn{j} kernels are created, one for each environment.
 }
 }
 \examples{
