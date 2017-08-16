@@ -2,8 +2,4 @@
 
 export(BLMMD)
 export(getK)
-export(h.fun)
-export(mainGE)
 import(stats)
-importFrom(MTM,MTM)
-importFrom(reshape2,acast)
