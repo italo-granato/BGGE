@@ -131,7 +131,7 @@ getK <- function(Y, X, kernel = c("GK", "GB"), K = NULL, h = 1, model = c("SM", 
       
       ker.tmp <- K
       #G <- list(Zg %*% tcrossprod(ker.tmp, Zg))
-      G <- list(Kernel = Zg %*% tcrossprod(ker.tmp, Zg), Type = "D")
+      G <- list(list(Kernel = Zg %*% tcrossprod(ker.tmp, Zg), Type = "D"))
   }
   
     names(G) <- if(length(G) > 1) paste("G", seq(length(G)), sep ="_") else "G"
