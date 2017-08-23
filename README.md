@@ -1,28 +1,27 @@
-# BLMMD
+# BGGE
 
 A `R` package to prepare datasets and fit GxE genomic models
 
 ## Installation
-To complete installation of BLMMD, you have to install a few packages first. You have to install `MCMCpack` and  `MTM`. However the latter is not available on [CRAN](https://cran.r-project.org/), so you need to install it via `devtools`
+To complete installation of BGGE, you have to install a few packages first.
 
 ```R
-install.packages("MCMCpack")
 install.packages("devtools")
-devtools::install_github('QuantGen/MTM')
-devtools::install_github('italo-granato/BLMMD')
+devtools::install_github('italo-granato/BGGE')
 
 ```
 
 ## Simple use
 
 ```R
+library(BGGE)
 library(BGLR)
 data(wheat)
 
 K <- list(G = list(K = tcrossprod(X)/ncol(X)))
 y <- as.vector(wheat.Y[,1])
 
-fit <- BLMMD(y = y, K = K)
+fit <- BGLR(y = y, K = K)
 ```
 
 ### Others params
@@ -31,10 +30,11 @@ fit <- BLMMD(y = y, K = K)
 |--------|------|
 | XF      | Design matrix for fixed effects |
 | ite     | Number of iterations. |
+| ne      | Number of subjects by environment. |
 | burn    | Number of iterations to be discarded as burn-in. |
 |thin     | Thinin interval. |
-| verbose | Should report be printed on screen |
-| me      | tolerance for zero. Default is 1e-10 |
+| verbose | Should report be printed on screen? |
+| tol      | tolerance for zero. Default is 1e-10 |
 
 ## Authors
 Italo Granato
