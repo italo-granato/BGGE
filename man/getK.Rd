@@ -66,6 +66,7 @@ deviation model - This model separates the genetic effects into the main genetic
 effects and the specific genetic effects (for each environment). Thus, one kernel 
 for across environments effect is created and \eqn{j} kernels are created, one for each 
 environment.
+These models were compared and named by Sousa et al. (2017)
 }
 }
 \examples{
@@ -84,11 +85,15 @@ pheno_geno <- data.frame(env = gl(n = 4, k = 599),
 
 }
 \references{
-Jarquín, D., J. Crossa, X. Lacaze, P. Du Cheyron, J. Daucourt, J. Lorgeou, F. Piraux, L. Guerreiro, P. Pérez, M. Calus, J. Burgueño,
+Jarquin, D., J. Crossa, X. Lacaze, P. Du Cheyron, J. Daucourt, J. Lorgeou, F. Piraux, L. Guerreiro, P. Pérez, M. Calus, J. Burgueño,
 and G. de los Campos. 2014. A reaction norm model for genomic selection using high-dimensional genomic and 
 environmental data. Theor. Appl. Genet. 127(3): 595–607.
 
-López-Cruz, M., J. Crossa, D. Bonnett, S. Dreisigacker, J. Poland, J.-L. Jannink, R.P. Singh, E. Autrique,
+Lopez-Cruz, M., J. Crossa, D. Bonnett, S. Dreisigacker, J. Poland, J.-L. Jannink, R.P. Singh, E. Autrique,
 and G. de los Campos. 2015. Increased prediction accuracy in wheat breeding trials using a marker × environment
 interaction genomic selection model. G3: Genes, Genomes, Genetics. 5(4): 569–82.
+
+Sousa, M. B., Cuevas, J., Oliveira, E. G. C., Perez-Rodriguez, P., Jarquin, D., Fritsche-Neto, R., Burgueno, J. 
+& Crossa, J. (2017). Genomic-enabled prediction in maize using kernel models with genotype x environment interaction.
+G3: Genes, Genomes, Genetics, 7(6), 1995-2014.
 }
