@@ -5,36 +5,36 @@
 #' @usage BGGE(y, K, XF = NULL, ne, ite = 1000, burn = 200, thin = 3, verbose = FALSE, tol = 1e-10)
 #'
 #' @param y Vector of data. Should be numeric and NAs are allowed.
-#' @param K list A two-level list Specify the regression kernels (co-variance matrix). The first element is \code{Kernel},
+#' @param K list A two-level list Specify the regression kernels (co-variance matrix). The first element is the \code{Kernel},
 #' where is included the regression kernels. The second element is the \code{Type}, specifying if the matrix is either \code{D} Dense or
-#' \code{BD} Block Diagonal. A number of regression kernels or random effects to be fitted are specify in this list.  
+#' \code{BD} Block Diagonal. A number of regression kernels or random effects to be fitted are specified in this list.  
 #' @param XF matrix Design matrix (\eqn{n \times p}) for fixed effects
 #' @param ne vector Number of genotypes by environment. 
 #' @param ite numeric Number of iterations.
 #' @param burn numeric Number of iterations to be discarded as burn-in.
 #' @param thin numeric Thinin interval.
-#' @param verbose Should iteration history be printed on console? if TRUE or 1 then it is printed,
-#' otherwise if another number $n$ is choosen the history is printed every $n$ times. Default is FALSE.  
+#' @param verbose Should iteration history be printed on console? If TRUE or 1 then it is printed,
+#' otherwise, if another number $n$ is choosen the history is printed every $n$ times. The default is FALSE.  
 #' @param tol a numeric tolerance level. Eigenvalues lower than \code{tol} are discarded. Default is 1e-10.
 #' 
 #' @details
 #' The goal is to fit genomic prediction models for continuous outcomes through Gibbs sampler. BGGE uses a proposal
-#' for dimension reduction through orthogonal transformation of observed data (y) as well as differential
+#' for dimension reduction through the orthogonal transformation of observed data (y) as well as differential
 #' shrinkage as a result of the prior variance assigned to regression parameters. Further details on this approach can be found in Cuevas et al. (2014).
 #' The basic genetic model is
 #' \deqn{y = g + e}
 #' where \eqn{y} is the response, \eqn{g} is the unknown random effect and \eqn{e} is the residual effect.
-#' You can specify a number of random effects \eqn{g}, as many as desired, through a list with regression kernels related to each random effect in the
+#' You can specify a number of random effects \eqn{g}, as many as desired, through a list of regression kernels related to each random effect in the
 #' argument \code{K}.
-#' The structure of \code{K} is a two level list, where the first element on the second level is the Kernel and the second element is a definition on
-#' type of matrix. There is two definitions, either matrices are \code{D} (dense) or \code{BD} (Block Diagonal). As we make the spectral decomposition 
-#' on the kernels, for block diagonal matrices, we take advantage of its structure and make decomposition on the submatrices instead of one matrices.
+#' The structure of \code{K} is a two level list, where the first element on the second level is the Kernel and the second element is a definition of
+#' type of matrix. There are two definitions, either matrix is \code{D} (dense) or \code{BD} (Block Diagonal). As we make the spectral decomposition 
+#' on the kernels, for block diagonal matrices, we take advantage of its structure and make decomposition on the submatrices instead of one big matrix.
 #' For example, the regression kernels should be an structure like K = list(list(Kernel = G, Type = "D"), list(Kernel = G, Type = "BD")). 
 #' The definition of one matrix as a block diagonal must be followed by the number of subjects in each submatrix in the block diagonal,
 #' present in the \code{ne}, which allows sub matrices to be drawn. Some genotype by environment models has the block diagonal matrix type or similar.
 #' The genotype x environment deviation matrix in MDs model (Sousa et al., 2017) has the structure of block diagonal. 
 #' Also, the matrices for environment-specific variance in MDe models (Sousa et al., 2017) if summed, can form an structure of block diagonal, 
-#' where is possible to extract sub matrices for each environment. In case of all kernel be of dense type, \code{ne} is ignored. 
+#' where is possible to extract sub matrices for each environment. In case of all kernel be of the dense type, \code{ne} is ignored. 
 #' 
 #' @return
 #'  A list with estimated posterior means of variance components for each term in the linear model and the genetic value predicted. Also along with 
