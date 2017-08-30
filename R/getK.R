@@ -171,7 +171,7 @@ getK <- function(Y, X, kernel = c("GK", "GB"), K = NULL, h = 1, model = c("SM", 
          'MDs' = {
            E <- tcrossprod(Ze)
            #GE <- Map('*', G, list(E))
-           GE <- lapply(G, function(x) list(Kernel = x$K * E, Type = "BD"))
+           GE <- lapply(G, function(x) list(Kernel = x$Kernel * E, Type = "BD"))
            names(GE) <- if(length(G) > 1) paste("GE", seq(length(G)), sep ="_") else "GE"
            out <- c(G, GE)
          },
@@ -186,7 +186,7 @@ getK <- function(Y, X, kernel = c("GK", "GB"), K = NULL, h = 1, model = c("SM", 
              ZEE[,i] <- Ze[,i]
              ZEEZ <- ZEE %*% t(Ze)
              #K3 <- G[[j]] * ZEEZ
-             K3 <- list(Kernel = G[[j]]$K * ZEEZ, Type = "BD")
+             K3 <- list(Kernel = G[[j]]$Kernel * ZEEZ, Type = "BD")
              return(K3)
            }))
            }
