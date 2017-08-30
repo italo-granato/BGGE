@@ -146,10 +146,7 @@ getK <- function(Y, X, kernel = c("GK", "GB"), K = NULL, h = 1, model = c("SM", 
       if(!all(subjects %in% rownames(K)))
         stop("Not all genotypes presents in phenotypic file are in the kernel matrix")
       
-      newOr <- match(subjects, rownames(K)) # new order for rows
-      newOc <- match(subjects, colnames(K)) # new order for columns
-      
-      K <- K[newOr, newOc] # reordering kernel
+      K <- K[subjects, subjects] # reordering kernel
       
       ker.tmp <- K
       #G <- list(Zg %*% tcrossprod(ker.tmp, Zg))
