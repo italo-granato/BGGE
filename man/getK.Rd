@@ -2,10 +2,10 @@
 % Please edit documentation in R/getK.R
 \name{getK}
 \alias{getK}
-\title{Kernel matrix for GxE models}
+\title{Kernel matrix for GE genomic selection models}
 \usage{
 getK(Y, X, kernel = c("GK", "GB"), K = NULL, h = 1,
-             model = c("SM", "MM", "MDs", "MDe"), quantil = 0.5)
+             model = c("SM", "MM", "MDs", "MDe"), quantil = 0.5, geno.as.random = FALSE)
 }
 \arguments{
 \item{Y}{\code{data.frame} Phenotypic data with three columns. The first column is a factor for environments,
@@ -24,50 +24,52 @@ Estimation of h can be made using a Bayesian approach as presented in Perez-Eliz
 models  \code{SM}, \code{MM}, \code{MDs} and \code{MDe}. See Details}
 
 \item{quantil}{Specifies the quantile to create the Gaussian kernel.}
+
+\item{geno.as.random}{if \code{TRUE}, kernel related to random intercept of genotype is included.}
 }
 \value{
-It returns a two-level list, where specifies the kernel and the type of matrix. 
+This function returns a two-level list, which specifies the kernel and the type of matrix. 
 The latter is a classification according to its structure, i. e.,
  if the matrix is dense or a block diagonal. For the main effect (\code{G}), 
- the matrix is classified as dense (D). Matrices for environment-specific and 
- genotype by environment effect (\code{GE}) are considered diagonal block (BD),
- given its structure. This classification is used in the prediction
- through the BGGE function.
+ the matrix is classified as dense (D). On the other hand, matrices for environment-specific and 
+ genotype by environment effect (\code{GE}) are considered diagonal block (BD). This classification is used 
+ as part of the prediction through the BGGE function.
 }
 \description{
-Create kernel matrix for genomic GxE models
+Create kernel matrix for GE genomic prediction models
 }
 \details{
-The aim is to create kernels to fit GxE interaction models. These models can be fitted using different kernels.
+The aim is to create kernels to fit GE interaction models applied to genomic prediction.
 Two standard genomic kernels are currently supported:
 \code{GB} creates a linear kernel resulted from the cross-product of centered and standardized 
 marker genotypes divide by the number of markers \eqn{p}:
-    \deqn{G = \frac{XX^T}{p}}
+    \deqn{GB = \frac{XX^T}{p}}
 Another alternative is the Gaussian Kernel \code{GK}, resulted from:
- \deqn{ K (x_i, x_{i'}) = exp(\frac{-h d_{ii'}^2}{q(d)})}
+ \deqn{ GK (x_i, x_{i'}) = exp(\frac{-h d_{ii'}^2}{q(d)})}
 where \eqn{d_{ii'}^2} is the genetic distance between individuals based on markers scaled 
 by some percentile \eqn{{q(d)}} and \eqn{h} is the bandwidth parameter. However, 
 other kernels can be provided through \code{K}. In this case, arguments \code{X}, 
 \code{kernel} and \code{h} are ignored.
 
-Currently supported models for GxE kernels are:
+Currently, the supported models for GE kernels are:
 \itemize{
-\item \code{SM}: is the single-environment main genotypic effect model - The SM model fits the data for a 
+\item \code{SM}: is the single-environment main genotypic effect model - It fits the data for a 
 single environment, and only one kernel is produced. 
-\item \code{MM}: is the multi-environment main genotypic effect model - Multi-environment model 
-considering the main random genetic effects across environments. Thus, one kernel 
-is produced, with order \eqn{n \times n}, related to the main effect across environments. 
+\item \code{MM}: is the multi-environment main genotypic effect model - It consideres the main
+random genetic effects across environments. Thus, just one kernel is produced, of order 
+\eqn{n \times n}, related to the main effect across environments. 
 \item \code{MDs}: is the multi-environment single variance genotype x environment deviation 
-model - This model is an extension of \code{MM} by adding the random interaction effect of 
+model - It is an extension of \code{MM} by adding the random interaction effect of 
 environments with genotype information. Thus, two kernels are created, one related to the 
 main effect across environment, and the second is associated with single genotype by environment effect.
 \item \code{MDe}: is the multi-environment, environment-specific variance genotype x environment 
-deviation model - This model separates the genetic effects into the main genetic 
+deviation model - It separates the genetic effects into the main genetic 
 effects and the specific genetic effects (for each environment). Thus, one kernel 
-for across environments effect is created and \eqn{j} kernels are created, one for each 
+for across environments effect and \eqn{j} kernels are created, one for each 
 environment.
-These models were compared and named by Sousa et al. (2017)
 }
+These GE genomic models were compared and named by Sousa et al. (2017) and can be increased by using 
+the kernel related to random intercept of genotype through \code{geno.as.random}.
 }
 \examples{
 # create kernel matrix for model MDs using wheat dataset
@@ -79,6 +81,7 @@ rownames(X) <- 1:599
 pheno_geno <- data.frame(env = gl(n = 4, k = 599), 
                GID = gl(n=599, k=1, length = 599*4),
                value = as.vector(wheat.Y))
+               
  K <- getK(Y = pheno_geno, X = X, kernel = "GB", model = "MDs")              
 
 
@@ -87,11 +90,15 @@ pheno_geno <- data.frame(env = gl(n = 4, k = 599),
 \references{
 Jarquin, D., J. Crossa, X. Lacaze, P. Du Cheyron, J. Daucourt, J. Lorgeou, F. Piraux, L. Guerreiro, P. Pérez, M. Calus, J. Burgueño,
 and G. de los Campos. 2014. A reaction norm model for genomic selection using high-dimensional genomic and 
-environmental data. Theor. Appl. Genet. 127(3): 595–607.
+environmental data. Theor. Appl. Genet. 127(3): 595-607.
 
 Lopez-Cruz, M., J. Crossa, D. Bonnett, S. Dreisigacker, J. Poland, J.-L. Jannink, R.P. Singh, E. Autrique,
 and G. de los Campos. 2015. Increased prediction accuracy in wheat breeding trials using a marker × environment
-interaction genomic selection model. G3: Genes, Genomes, Genetics. 5(4): 569–82.
+interaction genomic selection model. G3: Genes, Genomes, Genetics. 5(4): 569-82.
+
+Perez- Elizalde, S. J. Cuevas, P. Perez-Rodriguez, and J. Crossa. 2015. Selection of the
+Bandwidth Parameter in a Bayesian Kernel Regression Model for Genomic-Enabled Prediction. 
+Journal of Agricultural, Biological, and Environmental Statistics (JABES), 20(4):512-532.
 
 Sousa, M. B., Cuevas, J., Oliveira, E. G. C., Perez-Rodriguez, P., Jarquin, D., Fritsche-Neto, R., Burgueno, J. 
 & Crossa, J. (2017). Genomic-enabled prediction in maize using kernel models with genotype x environment interaction.
