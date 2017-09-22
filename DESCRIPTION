@@ -1,13 +1,13 @@
 Package: BGGE
-Title: Bayesian genomic linear models applied to GxE genome selection
+Title: Bayesian genomic linear models applied to GE genome selection
 Version: 0.0.1
 Authors@R: c(person("Italo", "Granato", email = "italo.granato@gmail.com", role = c("aut", "cre")),
              person("Luna-Vázquez", "Francisco J.", email = "frahik@gmail.com ", role =c("aut")),
              person("Cuevas", "Jaime", email = "jaicueva@uqroo.edu.mx", role =c("aut")))
-Description: Application for genome prediction for continuous variable, 
-              focused on GxE genomic models. Consist of functions 
-              to create regression kernels for some GxE GS models and to compute
-              genomic prediction based on a bayesian approach.
+Description: Application of genome prediction for a continuous variable, focused 
+             on GE genomic selection models (GS). It consists a group of functions 
+             that help to create regression kernels for some GE GS models and to 
+             compute genomic predictions based on Bayesian approaches.
 Depends: R (>= 3.1.1)
 Imports: 
       stats,
