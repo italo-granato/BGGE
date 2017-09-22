@@ -3,7 +3,7 @@
 #' Create kernel matrix for genomic GxE models 
 #'
 #' @usage getK(Y, X, kernel = c("GK", "GB"), K = NULL, h = 1,
-#'              model = c("SM", "MM", "MDs", "MDe"), quantil = 0.5)
+#'              model = c("SM", "MM", "MDs", "MDe"), quantil = 0.5, geno.as.random = FALSE)
 #'
 #' @param Y \code{data.frame} Phenotypic data with three columns. The first column is a factor for environments,
 #' the second column is a factor identifying genotypes, and the third column contains the trait of interest
@@ -15,6 +15,7 @@
 #' @param model Specifies the genotype \eqn{\times} environment model to be fitted. It currently supported the 
 #' models  \code{SM}, \code{MM}, \code{MDs} and \code{MDe}. See Details
 #' @param quantil Specifies the quantile to create the Gaussian kernel.
+#' @param geno.as.random if \code{TRUE}, kernel related to random intercept of genotype is included.
 #' 
 #' @details
 #' The aim is to create kernels to fit GxE interaction models. These models can be fitted using different kernels.
@@ -80,12 +81,14 @@
 #' pheno_geno <- data.frame(env = gl(n = 4, k = 599), 
 #'                GID = gl(n=599, k=1, length = 599*4),
 #'                value = as.vector(wheat.Y))
+#'                
 #'  K <- getK(Y = pheno_geno, X = X, kernel = "GB", model = "MDs")              
 #' 
 #' 
 #' 
 #' @export
-getK <- function(Y, X, kernel = c("GK", "GB"), K = NULL, h = 1, model = c("SM", "MM", "MDs", "MDe"), quantil = 0.5)
+getK <- function(Y, X, kernel = c("GK", "GB"), K = NULL, h = 1, model = c("SM", "MM", "MDs", "MDe"), quantil = 0.5,
+                 geno.as.random = FALSE)
 {
   #Force to data.frame
   Y <- as.data.frame(Y)
@@ -194,7 +197,11 @@ getK <- function(Y, X, kernel = c("GK", "GB"), K = NULL, h = 1, model = c("SM", 
          {
            stop("Model selected is not available ")
          })
-  
+    
+    if(geno.as.random){
+      Gi <- list(Kernel = Zg %*% tcrossprod(diag(length(subjects)), Zg), Type = "D")
+      out <- c(out, list(Gi = Gi))
+    }
   
   return(out)
 }
