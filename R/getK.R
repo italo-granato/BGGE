@@ -3,7 +3,8 @@
 #' Create kernel matrix for GE genomic prediction models 
 #'
 #' @usage getK(Y, X, kernel = c("GK", "GB"), K = NULL, h = 1,
-#'              model = c("SM", "MM", "MDs", "MDe"), quantil = 0.5, geno.as.random = FALSE)
+#'              model = c("SM", "MM", "MDs", "MDe"), quantil = 0.5,
+#'              geno.as.random = FALSE)
 #'
 #' @param Y \code{data.frame} Phenotypic data with three columns. The first column is a factor for environments,
 #' the second column is a factor identifying genotypes, and the third column contains the trait of interest
