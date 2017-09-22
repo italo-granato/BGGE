@@ -1,6 +1,6 @@
 # BGGE
 
-A `R` package to prepare datasets and fit GxE genomic models
+A `R` package to prepare datasets and fit GE genomic models
 
 ## Installation
 To complete installation of BGGE, you have to install a few packages first.
@@ -18,17 +18,25 @@ library(BGGE)
 library(BGLR)
 data(wheat)
 
-K <- list(G = list(K = tcrossprod(X)/ncol(X)))
-y <- as.vector(wheat.Y[,1])
+X <- scale(wheat.X, scale = TRUE, center = TRUE)
+rownames(X) <- 1:599
+pheno_geno <- data.frame(env = gl(n = 4, k = 599), 
+                         GID = gl(n=599, k=1, length = 599*4),
+                         value = as.vector(wheat.Y))
 
-fit <- BGLR(y = y, K = K)
+# Creating kernel for GE model
+
+K <- getK(Y = pheno_geno, X = X, kernel = "GB", model = "MM")
+y <- as.vector(wheat.Y)
+
+fit <- BGGE(y = y, K = K, ne = rep(599, 4))
 ```
 
 ### Others params
 
 | params |      |
 |--------|------|
-| XF      | Design matrix for fixed effects |
+| XF      | Design matrix for fixed effects. |
 | ite     | Number of iterations. |
 | ne      | Number of subjects by environment. |
 | burn    | Number of iterations to be discarded as burn-in. |
