@@ -54,7 +54,7 @@
 #' 
 #' y <- pheno_geno[,3]
 #' 
-#' fit <- BGGE(y = y, K = K, ne = 599)
+#' fit <- BGGE(y = y, K = K, ne = rep(599, 4))
 #'
 #' @seealso 
 #' \code{\link[BGLR]{BGLR}}
