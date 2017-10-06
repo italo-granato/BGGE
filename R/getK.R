@@ -11,7 +11,7 @@
 #' @param X Marker matrix with individuals in rows and markers in columns. Missing markers are not allowed.
 #' @param kernel Kernel to be created internally. Methods currently implemented are the Gaussian \code{GK} and the linear \code{GBLUP} kernel
 #' @param K \code{matrix} Single kernel matrix in case it is necessary to use a different kernel from \code{GK} or \code{GBLUP}
-#' @param h \code{numeric} Bandwidth parameter to create the Gaussian Kernel (GK) matrix. The default for \code{h} is 1.
+#' @param h \code{vector} Bandwidth parameter to create the Gaussian Kernel (GK) matrix. The default for \code{h} is 1.
 #' Estimation of h can be made using a Bayesian approach as presented in Perez-Elizalde et al. (2015)
 #' @param model Specifies the genotype \eqn{\times} environment model to be fitted. It currently supported the 
 #' models  \code{SM}, \code{MM}, \code{MDs} and \code{MDe}. See Details
