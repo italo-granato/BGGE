@@ -199,10 +199,6 @@ BGGE <- function(y, K, XF = NULL, ne, ite = 1000, burn = 200, thin = 3, verbose 
   
   # initial values of fixed effects 
   if(!is.null(XF)) {
-    rankXF <- qr(XF)$rank
-    if (rankXF < ncol(XF) ){
-      stop("XF is not full-column rank")
-    }
     Bet <- solve(crossprod(XF), crossprod(XF, y))
     nBet <- length(Bet)
     tXX <- solve(crossprod(XF))
