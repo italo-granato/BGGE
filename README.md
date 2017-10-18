@@ -48,3 +48,7 @@ fit <- BGGE(y = y, K = K, ne = rep(599, 4))
 Italo Granato
 Jaime D. Cuevas D.
 Francisco J. Luna-Vázquez
+
+
+## Link to dropbox
+https://www.dropbox.com/sh/1aezkhn359b3yx8/AAC8XbERcAW5ZPDfHlpspJs0a?dl=0
