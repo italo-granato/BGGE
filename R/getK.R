@@ -103,6 +103,10 @@ getK <- function(Y, X, kernel = c("GK", "GB"), K = NULL, h = 1, model = c("SM", 
   env <- levels(Y[,1])
   nEnv <- length(env)
   
+  # check for repeated genotypes
+  if(any(table(Y[,c(1:2)]) > 1))
+    warning("There are repeated genotypes in some environment. They were kept")
+
   switch(model,
          'SM' = {
            if (nEnv > 1)
