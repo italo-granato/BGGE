@@ -43,7 +43,7 @@
 #' 
 #' @examples 
 #' # multi-environment main genotypic model
-#' library(BGLR)
+#' library(BGGE)
 #' 
 #' X <- scale(wheat.X, scale = TRUE, center = TRUE)
 #' rownames(X) <- 1:599
@@ -348,9 +348,6 @@ BGGE <- function(y, K, XF = NULL, ne, ite = 1000, burn = 200, thin = 3, verbose 
       # Sampling scale hyperparameters and variance of genetic effects
       Sc[j] <- dcondSc(nu, sigb[j])
       sigb[j] <- dcondsigb(b, deltav, nr, nu, Sc[j])
-      #sigb.mcmc[i, j] <- sigb[j]
-      #u.mcmc[i, , j] <- u[[j]]
-      #u.mcmc[[j]][i,] <- u[[j]]
     }
     
     # Sampling residual variance 
@@ -358,7 +355,6 @@ BGGE <- function(y, K, XF = NULL, ne, ite = 1000, burn = 200, thin = 3, verbose 
     Sce <- dcondSc(nu, sigsq)
     sigsq <- dcondsigsq(res, n, nu, Sce)
     tau <- 1 / sigsq
-    #sigsq.mcmc[i] <- sigsq
     
     # Predicting missing values
     if(nNa > 0){
