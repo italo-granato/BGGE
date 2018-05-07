@@ -42,14 +42,8 @@
 #' 
 #' 
 #' @examples 
-#' 
-#' # Fitting single environment model
-#' library(BGLR)
-#' data(wheat)
-#' X<-wheat.X[1:200,1:600]  # Subset of 200 subjects and 600 markers
-#' rownames(X) <- 1:200
-#' Y<-wheat.Y[1:200,]
-#' A<-wheat.A[1:200,1:200] # Pedigree
+#' # multi-environment main genotypic model
+#' library(BGGE)
 #' 
 #' GB<-tcrossprod(X)/ncol(X)
 #' K<-list(G = list(Kernel = GB, Type = "D"))
@@ -359,9 +353,6 @@ BGGE <- function(y, K, XF = NULL, ne, ite = 1000, burn = 200, thin = 3, verbose 
       # Sampling scale hyperparameters and variance of genetic effects
       Sc[j] <- dcondSc(nu, sigb[j])
       sigb[j] <- dcondsigb(b, deltav, nr, nu, Sc[j])
-      #sigb.mcmc[i, j] <- sigb[j]
-      #u.mcmc[i, , j] <- u[[j]]
-      #u.mcmc[[j]][i,] <- u[[j]]
     }
     
     # Sampling residual variance 
@@ -369,7 +360,6 @@ BGGE <- function(y, K, XF = NULL, ne, ite = 1000, burn = 200, thin = 3, verbose 
     Sce <- dcondSc(nu, sigsq)
     sigsq <- dcondsigsq(res, n, nu, Sce)
     tau <- 1 / sigsq
-    #sigsq.mcmc[i] <- sigsq
     
     # Predicting missing values
     if(nNa > 0){

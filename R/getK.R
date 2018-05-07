@@ -78,7 +78,7 @@
 #' 
 #' @examples 
 #' # create kernel matrix for model MDs using wheat dataset
-#' library(BGLR)
+#' library(BGGE)
 #' 
 #' data(wheat)
 #' X <- scale(wheat.X, scale = TRUE, center = TRUE)
@@ -97,6 +97,7 @@ getK <- function(Y, X, kernel = c("GK", "GB"), setKernel = NULL, h = 1, model = 
 {
   #Force to data.frame
   Y <- as.data.frame(Y)
+  
   Y[colnames(Y)[1:2]] <- lapply(Y[colnames(Y)[1:2]], factor)
   
   subjects <- levels(Y[,2])
@@ -120,11 +121,11 @@ getK <- function(Y, X, kernel = c("GK", "GB"), setKernel = NULL, h = 1, model = 
            Zg <- model.matrix(~factor(Y[,2L]) - 1)
          })
   
-  if(is.null(setKernel)){
+  if(is.null(K)){
     if(is.null(rownames(X)))
       stop("Genotype names are missing")
     
-    if(!all(subjects %in% rownames(X)))
+    if (!all(subjects %in% rownames(X)))
       stop("Not all genotypes presents in the phenotypic file are in marker matrix")
     
     X <- X[subjects,]
@@ -145,23 +146,18 @@ getK <- function(Y, X, kernel = c("GK", "GB"), setKernel = NULL, h = 1, model = 
                ker.tmp <- exp(-h[i] * D / quantile(D, quantil))
                #G[[i]] <- Zg %*% tcrossprod(ker.tmp, Zg)
                G[[i]] <- list(Kernel = Zg %*% tcrossprod(ker.tmp, Zg), Type = "D")
-             }
-             names(G) <- seq(length(G))
+               }
              },
            {
              stop("kernel selected is not available. Please choose one method available or make available other kernel through argument K")
-           })
+            })
     }else{
-      ## check kernels
-      nullNames <- sapply(setKernel, function(x) any(sapply(dimnames(x), is.null)))
-      if(any(nullNames))
-        stop("Genotype names are missing in some kernel")
+      if(is.null(rownames(K)) | is.null(colnames(K)))
+        stop("Genotype names are missing")
       
-      # Condition to check if all genotype names are compatible
-      equalNames <- sapply(setKernel, function(x) mapply(function(z, y) all(z %in% y), z=list(subjects), y=dimnames(x)) )
-      if(!all(equalNames))
-        stop("Not all genotypes presents in phenotypic file are in the kernel matrix.
-             Please check dimnames")
+      # Condition to check if all genotypes name are compatible
+      if(!all(subjects %in% rownames(K)))
+        stop("Not all genotypes presents in phenotypic file are in the kernel matrix")
       
       K <- lapply(setKernel, function(x) x[subjects, subjects]) # reordering kernel
       
@@ -177,8 +173,7 @@ getK <- function(Y, X, kernel = c("GK", "GB"), setKernel = NULL, h = 1, model = 
       }
   }
   
-  tmp.names <- names(G)
-  names(G) <- if(length(G) > 1) paste("G", tmp.names, sep ="_") else "G"
+    names(G) <- if(length(G) > 1) paste("G", seq(length(G)), sep ="_") else "G"
 
   switch(model,
        
@@ -194,7 +189,7 @@ getK <- function(Y, X, kernel = c("GK", "GB"), setKernel = NULL, h = 1, model = 
            E <- tcrossprod(Ze)
            #GE <- Map('*', G, list(E))
            GE <- lapply(G, function(x) list(Kernel = x$Kernel * E, Type = "BD"))
-           names(GE) <- if(length(G) > 1) paste("GE", tmp.names, sep ="_") else "GE"
+           names(GE) <- if(length(G) > 1) paste("GE", seq(length(G)), sep ="_") else "GE"
            out <- c(G, GE)
          },
          
@@ -204,28 +199,23 @@ getK <- function(Y, X, kernel = c("GK", "GB"), setKernel = NULL, h = 1, model = 
            out.tmp <- list()
            
            for(j in 1:length(G)){
-           out.tmp <- c(out.tmp,
-                        lapply(1:nEnv, function(i){
-                          ZEE[,i] <- Ze[,i]
-                          ZEEZ <- ZEE %*% t(Ze)
-                          #K3 <- G[[j]] * ZEEZ
-                          K3 <- list(Kernel = G[[j]]$Kernel * ZEEZ, Type = "BD")
-                          return(K3)
-                        }) )
+           out.tmp <- c(out.tmp, lapply(1:nEnv, function(i){
+             ZEE[,i] <- Ze[,i]
+             ZEEZ <- ZEE %*% t(Ze)
+             #K3 <- G[[j]] * ZEEZ
+             K3 <- list(Kernel = G[[j]]$Kernel * ZEEZ, Type = "BD")
+             return(K3)
+           }))
            }
-           if(length(G) > 1){
-             names(out.tmp) <- paste(rep(env, length(G)), rep(tmp.names, each = nEnv), sep = "_" )
-           }else{
-             names(out.tmp) <-  env 
-           }
-           
+           name.tmp <- paste(rep(env, length(G)), rep(1:length(G), each = nEnv), sep = "_")
+           names(out.tmp) <- if(length(G) > 1) name.tmp else env
            out <- c(G, out.tmp)
            }, #DEFAULT CASE
          {
            stop("Model selected is not available ")
          })
     
-    if(intercept.random){
+    if(geno.as.random){
       Gi <- list(Kernel = Zg %*% tcrossprod(diag(length(subjects)), Zg), Type = "D")
       out <- c(out, list(Gi = Gi))
     }
