@@ -4,7 +4,7 @@
 \alias{getK}
 \title{Kernel matrix for GE genomic selection models}
 \usage{
-getK(Y, X, kernel = c("GK", "GB"), setKernel = NULL, h = 1,
+getK(Y, X, kernel = c("GK", "GB"), setKernel = NULL, bandwidth = 1,
              model = c("SM", "MM", "MDs", "MDe"), quantil = 0.5,
              intercept.random = FALSE)
 }
@@ -18,8 +18,8 @@ the second column is a factor identifying genotypes, and the third column contai
 
 \item{setKernel}{\code{matrix} Single kernel matrix in case it is necessary to use a different kernel from \code{GK} or \code{GBLUP}}
 
-\item{h}{\code{vector} Bandwidth parameter to create the Gaussian Kernel (GK) matrix. The default for \code{h} is 1.
-Estimation of h can be made using a Bayesian approach as presented in Perez-Elizalde et al. (2015)}
+\item{bandwidth}{\code{vector} Bandwidth parameter to create the Gaussian Kernel (GK) matrix. The default for the \code{bandwidth} is 1.
+Estimation of this parameter can be made using a Bayesian approach as presented in Perez-Elizalde et al. (2015)}
 
 \item{model}{Specifies the genotype \eqn{\times} environment model to be fitted. It currently supported the 
 models  \code{SM}, \code{MM}, \code{MDs} and \code{MDe}. See Details}
@@ -48,7 +48,7 @@ marker genotypes divide by the number of markers \eqn{p}:
 Another alternative is the Gaussian Kernel \code{GK}, resulted from:
  \deqn{ GK (x_i, x_{i'}) = exp(\frac{-h d_{ii'}^2}{q(d)})}
 where \eqn{d_{ii'}^2} is the genetic distance between individuals based on markers scaled 
-by some percentile \eqn{{q(d)}} and \eqn{h} is the bandwidth parameter. However, 
+by some percentile \eqn{{q(d)}} and \eqn{bandwidth} is the bandwidth parameter. However, 
 other kernels can be provided through \code{setKernel}. In this case, arguments \code{X}, 
 \code{kernel} and \code{h} are ignored.
 
@@ -74,6 +74,7 @@ the kernel related to random intercept of genotype through \code{intercept.rando
 }
 \examples{
 # create kernel matrix for model MDs using wheat dataset
+library(BGGE)
 library(BGLR)
 
 data(wheat)
