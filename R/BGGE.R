@@ -43,7 +43,12 @@
 #' 
 #' @examples 
 #' # multi-environment main genotypic model
-#' library(BGGE)
+#' library(BGLR)
+#' data(wheat)
+#' X<-wheat.X[1:200,1:600]  # Subset of 200 subjects and 600 markers
+#' rownames(X) <- 1:200
+#' Y<-wheat.Y[1:200,]
+#' A<-wheat.A[1:200,1:200] # Pedigree
 #' 
 #' GB<-tcrossprod(X)/ncol(X)
 #' K<-list(G = list(Kernel = GB, Type = "D"))
@@ -59,7 +64,7 @@
 #' K <- getK(Y = pheno_geno, X = X, kernel = "GB", model = "MM")
 #' y <- pheno_geno[,3]
 #' fit <- BGGE(y = y, K = K, ne = rep(nrow(Y), length(Env)), ite = 300, burn = 100,thin = 1)
-
+#' 
 #' 
 #' @seealso 
 #' \code{\link[BGLR]{BGLR}}

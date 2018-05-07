@@ -55,8 +55,7 @@ Also, the matrices for environment-specific variance in MDe models (Sousa et al.
 where is possible to extract sub matrices for each environment. In the case of all kernel be of the dense type, \code{ne} is ignored.
 }
 \examples{
-
-# Fitting single environment model
+# multi-environment main genotypic model
 library(BGLR)
 data(wheat)
 X<-wheat.X[1:200,1:600]  # Subset of 200 subjects and 600 markers
@@ -78,6 +77,7 @@ pheno_geno <- data.frame(env = gl(n = 2, k = nrow(Y), labels = Env),
 K <- getK(Y = pheno_geno, X = X, kernel = "GB", model = "MM")
 y <- pheno_geno[,3]
 fit <- BGGE(y = y, K = K, ne = rep(nrow(Y), length(Env)), ite = 300, burn = 100,thin = 1)
+
 
 }
 \references{
