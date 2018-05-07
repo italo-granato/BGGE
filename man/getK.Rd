@@ -4,8 +4,9 @@
 \alias{getK}
 \title{Kernel matrix for GE genomic selection models}
 \usage{
-getK(Y, X, kernel = c("GK", "GB"), K = NULL, h = 1,
-             model = c("SM", "MM", "MDs", "MDe"), quantil = 0.5, geno.as.random = FALSE)
+getK(Y, X, kernel = c("GK", "GB"), setKernel = NULL, h = 1,
+             model = c("SM", "MM", "MDs", "MDe"), quantil = 0.5,
+             intercept.random = FALSE)
 }
 \arguments{
 \item{Y}{\code{data.frame} Phenotypic data with three columns. The first column is a factor for environments,
@@ -15,9 +16,9 @@ the second column is a factor identifying genotypes, and the third column contai
 
 \item{kernel}{Kernel to be created internally. Methods currently implemented are the Gaussian \code{GK} and the linear \code{GBLUP} kernel}
 
-\item{K}{\code{matrix} Single kernel matrix in case it is necessary to use a different kernel from \code{GK} or \code{GBLUP}}
+\item{setKernel}{\code{matrix} Single kernel matrix in case it is necessary to use a different kernel from \code{GK} or \code{GBLUP}}
 
-\item{h}{\code{numeric} Bandwidth parameter to create the Gaussian Kernel (GK) matrix. The default for \code{h} is 1.
+\item{h}{\code{vector} Bandwidth parameter to create the Gaussian Kernel (GK) matrix. The default for \code{h} is 1.
 Estimation of h can be made using a Bayesian approach as presented in Perez-Elizalde et al. (2015)}
 
 \item{model}{Specifies the genotype \eqn{\times} environment model to be fitted. It currently supported the 
@@ -25,7 +26,7 @@ models  \code{SM}, \code{MM}, \code{MDs} and \code{MDe}. See Details}
 
 \item{quantil}{Specifies the quantile to create the Gaussian kernel.}
 
-\item{geno.as.random}{if \code{TRUE}, kernel related to random intercept of genotype is included.}
+\item{intercept.random}{if \code{TRUE}, kernel related to random intercept of genotype is included.}
 }
 \value{
 This function returns a two-level list, which specifies the kernel and the type of matrix. 
@@ -48,7 +49,7 @@ Another alternative is the Gaussian Kernel \code{GK}, resulted from:
  \deqn{ GK (x_i, x_{i'}) = exp(\frac{-h d_{ii'}^2}{q(d)})}
 where \eqn{d_{ii'}^2} is the genetic distance between individuals based on markers scaled 
 by some percentile \eqn{{q(d)}} and \eqn{h} is the bandwidth parameter. However, 
-other kernels can be provided through \code{K}. In this case, arguments \code{X}, 
+other kernels can be provided through \code{setKernel}. In this case, arguments \code{X}, 
 \code{kernel} and \code{h} are ignored.
 
 Currently, the supported models for GE kernels are:
@@ -69,7 +70,7 @@ for across environments effect and \eqn{j} kernels are created, one for each
 environment.
 }
 These GE genomic models were compared and named by Sousa et al. (2017) and can be increased by using 
-the kernel related to random intercept of genotype through \code{geno.as.random}.
+the kernel related to random intercept of genotype through \code{intercept.random}.
 }
 \examples{
 # create kernel matrix for model MDs using wheat dataset
