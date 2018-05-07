@@ -74,7 +74,6 @@ the kernel related to random intercept of genotype through \code{intercept.rando
 }
 \examples{
 # create kernel matrix for model MDs using wheat dataset
-library(BGGE)
 library(BGLR)
 
 data(wheat)
