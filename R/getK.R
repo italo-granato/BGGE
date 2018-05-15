@@ -151,6 +151,9 @@ getK <- function(Y, X, kernel = c("GK", "GB"), setKernel = NULL, bandwidth = 1, 
            {
              stop("kernel selected is not available. Please choose one method available or make available other kernel through argument K")
             })
+    
+    names(G) <- seq(length(G))
+    
     }else{
       ## check kernels
       nullNames <- sapply(setKernel, function(x) any(sapply(dimnames(x), is.null)))
@@ -180,6 +183,7 @@ getK <- function(Y, X, kernel = c("GK", "GB"), setKernel = NULL, bandwidth = 1, 
   
   tmp.names <- names(G)
   names(G) <- if(length(G) > 1) paste("G", tmp.names, sep ="_") else "G"
+  
 
   switch(model,
        
