@@ -1,0 +1,142 @@
+---
+output: github_document
+---
+
+<p align="center">
+  <a href="https://github.com/italo-granato/BGGE">
+    <img src="Logo.png" alt="Bayesian Genomic Linear Models Applied to GE Genome Selection"/>
+  </a>
+  <h4 align="center">
+  Bayesian Genomic Linear Models Applied to GE Genome Selection - Development version `r packageVersion('BGGE')`
+  </h4>
+  <h4 align="center">
+    [Last README update: `r format(Sys.Date())`]
+  </h4>
+  <p align="center">
+    [![Release][release-badge]][cran]
+    [![License: LGPL v3][LGPL-badge]][LGPL]
+    [![Project Status: Active][status-bagde]][status]
+    [![Downloads][downloads-badge]][cran]
+  </p>
+</p>
+
+# Table of contents
+  - [NEWS](#news)
+  - [Instructions](#instructions)
+    - [Installation](#install)
+    - [Load the package](#package)
+    - [Quick use](#example1)
+    - [Other Params](#params)
+  - [How to cite this package](#cite)
+  - [Contributions](#contributions)
+  - [Authors](#authors)
+
+<h2 id="news">
+  News of this version (`r packageVersion('BGGE')`)
+</h2>
+  * Minor improvements
+
+See the last updates in [NEWS](NEWS.md).
+
+<h2 id="instructions">
+  Instructions for proper implementation
+</h2>
+
+<h3 id="install">
+  Installation
+</h3>
+
+To complete installation of dev version of BGGE from GitHub, you must have previously installed the devtools package.
+
+```{r installation, eval = FALSE}
+install.packages('devtools')
+devtools::install_github('italo/BGGE')
+```
+
+If you want to use the stable version of BGGE package, install it from CRAN.
+```{r CRAN, eval=FALSE}
+install.packages('BGGE')
+```
+
+<h3 id="package">
+  Load the package
+</h3>
+
+```{r}
+library(BGGE)
+```
+
+<h3 id="example1">
+  Example of Cross-validation with IBCF.MTME
+</h3>
+
+```{r BGGEUse}
+library(BGGE)
+library(BGLR)
+data(wheat)
+
+X <- scale(wheat.X, scale = TRUE, center = TRUE)
+rownames(X) <- 1:599
+pheno_geno <- data.frame(env = gl(n = 4, k = 599), 
+                         GID = gl(n=599, k=1, length = 599*4),
+                         value = as.vector(wheat.Y))
+
+# Creating kernel for GE model
+
+K <- getK(Y = pheno_geno, X = X, kernel = "GB", model = "MM")
+y <- as.vector(wheat.Y)
+
+fit <- BGGE(y = y, K = K, ne = rep(599, 4))
+
+plot(fit$yHat, y)
+```
+
+
+<h3 id="params">
+  Others params
+</h3>
+
+| params |      |
+|--------|------|
+| XF      | Design matrix for fixed effects. |
+| ite     | Number of iterations. |
+| ne      | Number of subjects by environment. |
+| burn    | Number of iterations to be discarded as burn-in. |
+|thin     | Thinin interval. |
+| verbose | Should report be printed on screen? |
+| tol      | tolerance for zero. Default is 1e-10 |
+
+<h2 id="cite">
+  Citation
+</h2>
+
+First option, by the paper.
+
+(Comming soon)
+
+Second option, by the package
+```{r}
+citation('BGGE')
+```
+
+<h2 id="contributions">
+  Contributions
+</h2>
+
+If you have any suggestions or feedback, I would love to hear about it. Feel free to report new issues in [this link](https://github.com/italo/BGGE/issues/new), also if you want to request a feature/report a bug, or make a pull request if you can contribute.
+
+<h2 id="authors">
+  Authors
+</h2>
+ - Italo Granato (Author, Maintainer)
+ - Jaime D. Cuevas D. (Author)
+ - Francisco J. Luna-Vázquez (Author, Maintainer)
+
+
+[LGPL-badge]: https://img.shields.io/badge/License-LGPL%20v3-blue.svg "LGPL, Version 2.0"
+[status-bagde]: http://www.repostatus.org/badges/latest/active.svg "status"
+[downloads-badge]: https://cranlogs.r-pkg.org/badges/BGGE "IBCF.MTME cranlogs"
+[release-badge]: http://www.r-pkg.org/badges/version-ago/BGGE "IBCF.MTME release"
+[cran]: https://cran.r-project.org/package=BGGE "CRAN Page"
+[LGPL]: https://www.gnu.org/licenses/lgpl-3.0 "LGPL, Version 2.0"
+[status]: http://www.repostatus.org/#active "status - active"
