@@ -14,7 +14,7 @@ output: github_document
   </h4>
   <p align="center">
     [![Release][release-badge]][cran]
-    [![License: LGPL v3][LGPL-badge]][LGPL]
+    [![License: GPL v3][GPL-badge]][GPL]
     [![Project Status: Active][status-bagde]][status]
     [![Downloads][downloads-badge]][cran]
   </p>
@@ -67,7 +67,7 @@ library(BGGE)
 ```
 
 <h3 id="example1">
-  Example of Cross-validation with IBCF.MTME
+  Example of simple usage of the package
 </h3>
 
 ```{r BGGEUse}
@@ -133,10 +133,10 @@ If you have any suggestions or feedback, I would love to hear about it. Feel fre
  - Francisco J. Luna-Vázquez (Author, Maintainer)
 
 
-[LGPL-badge]: https://img.shields.io/badge/License-LGPL%20v3-blue.svg "LGPL, Version 2.0"
+[GPL-badge]: https://img.shields.io/badge/License-GPL%20v3-blue.svg "LGPL, Version 2.0"
 [status-bagde]: http://www.repostatus.org/badges/latest/active.svg "status"
 [downloads-badge]: https://cranlogs.r-pkg.org/badges/BGGE "IBCF.MTME cranlogs"
 [release-badge]: http://www.r-pkg.org/badges/version-ago/BGGE "IBCF.MTME release"
 [cran]: https://cran.r-project.org/package=BGGE "CRAN Page"
-[LGPL]: https://www.gnu.org/licenses/lgpl-3.0 "LGPL, Version 2.0"
+[GPL]: https://www.gnu.org/licenses/gpl-3.0 "LGPL, Version 2.0"
 [status]: http://www.repostatus.org/#active "status - active"

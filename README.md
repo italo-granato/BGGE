@@ -22,9 +22,9 @@ Development version 0.6.2
 
 [![Release](http://www.r-pkg.org/badges/version-ago/BGGE
 "IBCF.MTME release")](https://cran.r-project.org/package=BGGE "CRAN Page")
-[![License: LGPL
-v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg
-"LGPL, Version 2.0")](https://www.gnu.org/licenses/lgpl-3.0 "LGPL, Version 2.0")
+[![License: GPL
+v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg
+"LGPL, Version 2.0")](https://www.gnu.org/licenses/gpl-3.0 "LGPL, Version 2.0")
 [![Project Status:
 Active](http://www.repostatus.org/badges/latest/active.svg
 "status")](http://www.repostatus.org/#active "status - active")
@@ -96,7 +96,7 @@ library(BGGE)
 
 <h3 id="example1">
 
-Example of Cross-validation with IBCF.MTME
+Example of simple usage of the package
 
 </h3>
 
