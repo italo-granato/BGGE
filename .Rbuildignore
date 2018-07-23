@@ -1,2 +1,7 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^README.Rmd$
+^README.md$
+^Logo.png$
+^README_files$
+^BGGEUse-1\.png$
