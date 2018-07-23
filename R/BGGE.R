@@ -240,10 +240,10 @@ BGGE <- function(y, K, XF = NULL, ne, ite = 1000, burn = 200, thin = 3, verbose 
   
   
   nu <- 3
-  Sce <- (nu + 2) *(1-R2)*var(y)/2
+  Sce <- (nu + 2) *(1-R2)*var(y, na.rm=TRUE)
   Sc<-numeric(length(K))
   for( i in 1:length(K)){
-    Sc[i]<-(nu+2)*R2*var(y)/mean(diag(K[[i]]$Kernel))
+    Sc[i]<-(nu+2)*R2*var(y,na.rm=T)/mean(diag(K[[i]]$Kernel))
   }
   tau <- 0.01
   u <- list()
