@@ -2,7 +2,8 @@
 #' 
 #' BGGE function fits Bayesian regression for continuous observations through regression kernels
 #'
-#' @usage BGGE(y, K, XF = NULL, ne, ite = 1000, burn = 200, thin = 3, verbose = FALSE, tol = 1e-10)
+#' @usage BGGE(y, K, XF = NULL, ne, ite = 1000, burn = 200, thin = 3, verbose = FALSE, 
+#'             tol = 1e-10, R2 = 0.5)
 #'
 #' @param y Vector of data. Should be numeric and NAs are allowed.
 #' @param K list A two-level list Specify the regression kernels (co-variance matrix). The former is the \code{Kernel},
@@ -16,6 +17,7 @@
 #' @param verbose Should iteration history be printed on console? If TRUE or 1 then it is printed,
 #' otherwise, if another number $n$ is choosen the history is printed every $n$ times. The default is FALSE.  
 #' @param tol a numeric tolerance level. Eigenvalues lower than \code{tol} are discarded. Default is 1e-10.
+#' @param R2 the proportion of variance expected to be explained by the regression.
 #' 
 #' @details
 #' The goal is to fit genomic prediction models for continuous outcomes through Gibbs sampler. BGGE uses a proposal for dimension reduction

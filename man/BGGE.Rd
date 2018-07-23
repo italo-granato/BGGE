@@ -4,7 +4,8 @@
 \alias{BGGE}
 \title{Genotype x Environment models using regression kernel}
 \usage{
-BGGE(y, K, XF = NULL, ne, ite = 1000, burn = 200, thin = 3, verbose = FALSE, tol = 1e-10)
+BGGE(y, K, XF = NULL, ne, ite = 1000, burn = 200, thin = 3, verbose = FALSE, 
+            tol = 1e-10, R2 = 0.5)
 }
 \arguments{
 \item{y}{Vector of data. Should be numeric and NAs are allowed.}
@@ -27,6 +28,8 @@ where is included the regression kernels. The later is the \code{Type}, specifyi
 otherwise, if another number $n$ is choosen the history is printed every $n$ times. The default is FALSE.}
 
 \item{tol}{a numeric tolerance level. Eigenvalues lower than \code{tol} are discarded. Default is 1e-10.}
+
+\item{R2}{the proportion of variance expected to be explained by the regression.}
 }
 \value{
 A list with estimated posterior means of residual and genetic variance component for each term in the linear model and the genetic value predicted. Also the 
