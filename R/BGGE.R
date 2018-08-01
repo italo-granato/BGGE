@@ -2,7 +2,8 @@
 #' 
 #' BGGE function fits Bayesian regression for continuous observations through regression kernels
 #'
-#' @usage BGGE(y, K, XF = NULL, ne, ite = 1000, burn = 200, thin = 3, verbose = FALSE, tol = 1e-10)
+#' @usage BGGE(y, K, XF = NULL, ne, ite = 1000, burn = 200, thin = 3, verbose = FALSE, 
+#'             tol = 1e-10, R2 = 0.5)
 #'
 #' @param y Vector of data. Should be numeric and NAs are allowed.
 #' @param K list A two-level list Specify the regression kernels (co-variance matrix). The former is the \code{Kernel},
@@ -16,6 +17,7 @@
 #' @param verbose Should iteration history be printed on console? If TRUE or 1 then it is printed,
 #' otherwise, if another number $n$ is choosen the history is printed every $n$ times. The default is FALSE.  
 #' @param tol a numeric tolerance level. Eigenvalues lower than \code{tol} are discarded. Default is 1e-10.
+#' @param R2 the proportion of variance expected to be explained by the regression.
 #' 
 #' @details
 #' The goal is to fit genomic prediction models for continuous outcomes through Gibbs sampler. BGGE uses a proposal for dimension reduction
@@ -79,7 +81,7 @@
 #' 
 #' 
 #' @export
-BGGE <- function(y, K, XF = NULL, ne, ite = 1000, burn = 200, thin = 3, verbose = FALSE, tol = 1e-10) {
+BGGE <- function(y, K, XF = NULL, ne, ite = 1000, burn = 200, thin = 3, verbose = FALSE, tol = 1e-10, R2 = 0.5) {
   ### PART I  - Conditional distributions functions and eigen descomposition ####
   # Conditional Distribution of tranformed genetic effects b (U'u)
   #' @import stats
@@ -93,12 +95,6 @@ BGGE <- function(y, K, XF = NULL, ne, ite = 1000, burn = 200, thin = 3, verbose 
     z <- sum(b ^ 2 * deltav)
     return(1 / rgamma(1, (n + nu) / 2, (z + nu * Sc) / 2))
   } 
-  
-  # Conditional distribution of scale hyperparameter chi-square (Sc) of 
-  # compound variance of genetic effects. 
-  dcondSc <- function(nu, sigb) {
-    return(rgamma(1, (nu ) / 2 + 1, (nu / (2 * sigb))))
-  }
   
   # Conditional distribution of residual compound variance 
   dcondsigsq <- function(Aux, n, nu, Sce) {
@@ -246,7 +242,11 @@ BGGE <- function(y, K, XF = NULL, ne, ite = 1000, burn = 200, thin = 3, verbose 
   
   
   nu <- 3
-  Sce <- (nu + 2) * var(y) / 2
+  Sce <- (nu + 2) *(1-R2)*var(y, na.rm=TRUE)
+  Sc<-numeric(length(K))
+  for( i in 1:length(K)){
+    Sc[i]<-(nu+2)*R2*var(y,na.rm=T)/mean(diag(K[[i]]$Kernel))
+  }
   tau <- 0.01
   u <- list()
   for (j in 1:nk) {
@@ -356,13 +356,12 @@ BGGE <- function(y, K, XF = NULL, ne, ite = 1000, burn = 200, thin = 3, verbose 
       }
       
       # Sampling scale hyperparameters and variance of genetic effects
-      Sc[j] <- dcondSc(nu, sigb[j])
       sigb[j] <- dcondsigb(b, deltav, nr, nu, Sc[j])
     }
     
     # Sampling residual variance 
     res <- temp
-    Sce <- dcondSc(nu, sigsq)
+    #Sce <- dcondSc(nu, sigsq)
     sigsq <- dcondsigsq(res, n, nu, Sce)
     tau <- 1 / sigsq
     
