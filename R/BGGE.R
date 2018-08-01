@@ -253,7 +253,7 @@ BGGE <- function(y, K, XF = NULL, ne, ite = 1000, burn = 200, thin = 3, verbose 
     u[[j]] <- rnorm(n, 0, 1 / (2 * n))
     }
   sigsq <- var(y)
-  Sc <- rep(0.01, nk)
+  #Sc <- rep(0.01, nk)
   sigb <- rep(0.2, nk)
   
   temp <- y - mu
