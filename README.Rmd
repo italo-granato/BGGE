@@ -13,10 +13,15 @@ output: github_document
     [Last README update: `r format(Sys.Date())`]
   </h4>
   <p align="center">
-    [![Release][release-badge]][cran]
-    [![License: GPL v3][GPL-badge]][GPL]
-    [![Project Status: Active][status-bagde]][status]
-    [![Downloads][downloads-badge]][cran]
+    <a href="https://www.gnu.org/licenses/lgpl-3.0">
+    <img src="https://img.shields.io/badge/License-LGPL%20v3-blue.svg" alt="LGPL, Version 3.0">
+    </a> <a href="http://www.repostatus.org/#active">
+    <img src="http://www.repostatus.org/badges/latest/active.svg" alt="Status of the Repo: Active">
+    </a> <a href="">
+    <img src="http://cranlogs.r-pkg.org/badges/BGGE" alt="Dowloads from the CRAN">
+    </a> <a href="https://cran.r-project.org/package=BGGE">
+    <img src="http://www.r-pkg.org/badges/version-ago/BGGE" alt="CRAN">
+    </a>
   </p>
 </p>
 
@@ -34,7 +39,9 @@ output: github_document
 <h2 id="news">
   News of this version (`r packageVersion('BGGE')`)
 </h2>
-  * Minor improvements
+
+* remove previously Sc conditional distribution
+* fixed rm.na
 
 See the last updates in [NEWS](NEWS.md).
 
@@ -96,7 +103,7 @@ plot(fit$yHat, y)
   Others params
 </h3>
 
-| params |      |
+| params |  Use    |
 |--------|------|
 | XF      | Design matrix for fixed effects. |
 | ite     | Number of iterations. |
@@ -105,6 +112,8 @@ plot(fit$yHat, y)
 |thin     | Thinin interval. |
 | verbose | Should report be printed on screen? |
 | tol      | tolerance for zero. Default is 1e-10 |
+| R2      | the proportion of variance expected to be explained by the regression |
+
 
 <h2 id="cite">
   Citation
@@ -112,7 +121,19 @@ plot(fit$yHat, y)
 
 First option, by the paper.
 
-(Comming soon)
+```tex
+@article {Granato2018,
+	author = {Granato, Italo and Cuevas, Jaime and Luna-V{\'a}zquez, Francisco J. and Crossa, Jos{\'e} and Montesinos-L{\'o}pez, Osval A. and Burgue{\~n}o, Juan and Fritsche-Neto, Roberto},
+	title = {BGGE: A New Package for Genomic-Enabled Prediction Incorporating Genotype {\texttimes} Environment Interaction Models},
+	year = {2018},
+	doi = {10.1534/g3.118.200435},
+	publisher = {G3: Genes, Genomes, Genetics},
+	URL = {http://www.g3journal.org/content/early/2018/07/25/g3.118.200435},
+	eprint = {http://www.g3journal.org/content/early/2018/07/25/g3.118.200435.full.pdf},
+	journal = {G3: Genes, Genomes, Genetics}
+}
+```
+
 
 Second option, by the package
 ```{r}
@@ -125,18 +146,16 @@ citation('BGGE')
 
 If you have any suggestions or feedback, I would love to hear about it. Feel free to report new issues in [this link](https://github.com/italo/BGGE/issues/new), also if you want to request a feature/report a bug, or make a pull request if you can contribute.
 
+<h2 id="contributions">
+  Research and implementations
+</h2>
+
+* [BGGE: A New Package for Genomic-Enabled Prediction Incorporating Genotype × Environment Interaction Models](https://doi.org/10.1534/g3.118.200435)
+
+
 <h2 id="authors">
   Authors
-</h2>
+</h2> 
  - Italo Granato (Author, Maintainer)
  - Jaime D. Cuevas D. (Author)
  - Francisco J. Luna-Vázquez (Author, Maintainer)
-
-
-[GPL-badge]: https://img.shields.io/badge/License-GPL%20v3-blue.svg "LGPL, Version 2.0"
-[status-bagde]: http://www.repostatus.org/badges/latest/active.svg "status"
-[downloads-badge]: https://cranlogs.r-pkg.org/badges/BGGE "IBCF.MTME cranlogs"
-[release-badge]: http://www.r-pkg.org/badges/version-ago/BGGE "IBCF.MTME release"
-[cran]: https://cran.r-project.org/package=BGGE "CRAN Page"
-[GPL]: https://www.gnu.org/licenses/gpl-3.0 "LGPL, Version 2.0"
-[status]: http://www.repostatus.org/#active "status - active"

@@ -8,28 +8,26 @@
 <h4 align="center">
 
 Bayesian Genomic Linear Models Applied to GE Genome Selection -
-Development version 0.6.2
+Development version 0.6.5
 
 </h4>
 
 <h4 align="center">
 
-\[Last README update: 2018-05-16\]
+\[Last README update: 2018-08-10\]
 
 </h4>
 
 <p align="center">
 
-[![Release](http://www.r-pkg.org/badges/version-ago/BGGE
-"IBCF.MTME release")](https://cran.r-project.org/package=BGGE "CRAN Page")
-[![License: GPL
-v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg
-"LGPL, Version 2.0")](https://www.gnu.org/licenses/gpl-3.0 "LGPL, Version 2.0")
-[![Project Status:
-Active](http://www.repostatus.org/badges/latest/active.svg
-"status")](http://www.repostatus.org/#active "status - active")
-[![Downloads](https://cranlogs.r-pkg.org/badges/BGGE
-"IBCF.MTME cranlogs")](https://cran.r-project.org/package=BGGE "CRAN Page")
+<a href="https://www.gnu.org/licenses/lgpl-3.0">
+<img src="https://img.shields.io/badge/License-LGPL%20v3-blue.svg" alt="LGPL, Version 3.0">
+</a> <a href="http://www.repostatus.org/#active">
+<img src="http://www.repostatus.org/badges/latest/active.svg" alt="Status of the Repo: Active">
+</a> <a href="">
+<img src="http://cranlogs.r-pkg.org/badges/BGGE" alt="Dowloads from the CRAN">
+</a> <a href="https://cran.r-project.org/package=BGGE">
+<img src="http://www.r-pkg.org/badges/version-ago/BGGE" alt="CRAN"> </a>
 
 </p>
 
@@ -49,11 +47,12 @@ Active](http://www.repostatus.org/badges/latest/active.svg
 
 <h2 id="news">
 
-News of this version (0.6.2)
+News of this version (0.6.5)
 
 </h2>
 
-  - Minor improvements
+  - remove previously Sc conditional distribution
+  - fixed rm.na
 
 See the last updates in [NEWS](NEWS.md).
 
@@ -125,19 +124,21 @@ plot(fit$yHat, y)
 
 <h3 id="params">
 
-Others params
+Others
+params
 
 </h3>
 
-| params  |                                                  |
-| ------- | ------------------------------------------------ |
-| XF      | Design matrix for fixed effects.                 |
-| ite     | Number of iterations.                            |
-| ne      | Number of subjects by environment.               |
-| burn    | Number of iterations to be discarded as burn-in. |
-| thin    | Thinin interval.                                 |
-| verbose | Should report be printed on screen?              |
-| tol     | tolerance for zero. Default is 1e-10             |
+| params  | Use                                                                   |
+| ------- | --------------------------------------------------------------------- |
+| XF      | Design matrix for fixed effects.                                      |
+| ite     | Number of iterations.                                                 |
+| ne      | Number of subjects by environment.                                    |
+| burn    | Number of iterations to be discarded as burn-in.                      |
+| thin    | Thinin interval.                                                      |
+| verbose | Should report be printed on screen?                                   |
+| tol     | tolerance for zero. Default is 1e-10                                  |
+| R2      | the proportion of variance expected to be explained by the regression |
 
 <h2 id="cite">
 
@@ -147,7 +148,18 @@ Citation
 
 First option, by the paper.
 
-(Comming soon)
+``` tex
+@article {Granato2018,
+    author = {Granato, Italo and Cuevas, Jaime and Luna-V{\'a}zquez, Francisco J. and Crossa, Jos{\'e} and Montesinos-L{\'o}pez, Osval A. and Burgue{\~n}o, Juan and Fritsche-Neto, Roberto},
+    title = {BGGE: A New Package for Genomic-Enabled Prediction Incorporating Genotype {\texttimes} Environment Interaction Models},
+    year = {2018},
+    doi = {10.1534/g3.118.200435},
+    publisher = {G3: Genes, Genomes, Genetics},
+    URL = {http://www.g3journal.org/content/early/2018/07/25/g3.118.200435},
+    eprint = {http://www.g3journal.org/content/early/2018/07/25/g3.118.200435.full.pdf},
+    journal = {G3: Genes, Genomes, Genetics}
+}
+```
 
 Second option, by the package
 
@@ -160,7 +172,7 @@ citation('BGGE')
     ## 
     ##   Italo Granato, Luna-Vázquez Francisco J. and Cuevas Jaime
     ##   (2018). BGGE: Bayesian Genomic Linear Models Applied to GE
-    ##   Genome Selection. R package version 0.6.2.
+    ##   Genome Selection. R package version 0.6.5.
     ##   https://CRAN.R-project.org/package=BGGE
     ## 
     ## A BibTeX entry for LaTeX users is
@@ -169,7 +181,7 @@ citation('BGGE')
     ##     title = {BGGE: Bayesian Genomic Linear Models Applied to GE Genome Selection},
     ##     author = {Italo Granato and Luna-Vázquez {Francisco J.} and Cuevas Jaime},
     ##     year = {2018},
-    ##     note = {R package version 0.6.2},
+    ##     note = {R package version 0.6.5},
     ##     url = {https://CRAN.R-project.org/package=BGGE},
     ##   }
 
@@ -184,6 +196,16 @@ Feel free to report new issues in [this
 link](https://github.com/italo/BGGE/issues/new), also if you want to
 request a feature/report a bug, or make a pull request if you can
 contribute.
+
+<h2 id="contributions">
+
+Research and implementations
+
+</h2>
+
+  - [BGGE: A New Package for Genomic-Enabled Prediction Incorporating
+    Genotype × Environment Interaction
+    Models](https://doi.org/10.1534/g3.118.200435)
 
 <h2 id="authors">
 
