@@ -40,8 +40,12 @@ output: github_document
   News of this version (`r packageVersion('BGGE')`)
 </h2>
 
-* remove previously Sc conditional distribution
-* fixed rm.na
+Changes:
+
+* Added compatibility with the functions (print() and plot()).
+* Include ORCID of the authors.
+* Include url of the project.
+* Now the `BGGE()` function exports the input parameters.
 
 See the last updates in [NEWS](NEWS.md).
 
@@ -94,8 +98,9 @@ K <- getK(Y = pheno_geno, X = X, kernel = "GB", model = "MM")
 y <- as.vector(wheat.Y)
 
 fit <- BGGE(y = y, K = K, ne = rep(599, 4))
+fit
 
-plot(fit$yHat, y)
+plot(fit)
 ```
 
 
