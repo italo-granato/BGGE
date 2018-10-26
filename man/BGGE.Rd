@@ -4,7 +4,7 @@
 \alias{BGGE}
 \title{Genotype x Environment models using regression kernel}
 \usage{
-BGGE(y, K, XF = NULL, ne, ite = 1000, burn = 200, thin = 3, verbose = FALSE, 
+BGGE(y, K, XF = NULL, ne, ite = 1000, burn = 200, thin = 3, verbose = TRUE, 
             tol = 1e-10, R2 = 0.5)
 }
 \arguments{
@@ -25,9 +25,9 @@ where is included the regression kernels. The later is the \code{Type}, specifyi
 \item{thin}{numeric Thinin interval.}
 
 \item{verbose}{Should iteration history be printed on console? If TRUE or 1 then it is printed,
-otherwise, if another number $n$ is choosen the history is printed every $n$ times. The default is FALSE.}
+otherwise, if another number $n$ is choosen the history is printed every $n$ times. The default is \code{FALSE}}
 
-\item{tol}{a numeric tolerance level. Eigenvalues lower than \code{tol} are discarded. Default is 1e-10.}
+\item{tol}{a numeric tolerance level. Eigenvalues lower than \code{tol} are discarded. Default is \code{1e-10}.}
 
 \item{R2}{the proportion of variance expected to be explained by the regression.}
 }
