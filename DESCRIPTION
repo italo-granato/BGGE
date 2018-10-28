@@ -1,6 +1,6 @@
 Package: BGGE
 Title: Bayesian Genomic Linear Models Applied to GE Genome Selection
-Version: 0.6.5
+Version: 0.6.6
 Date: 2018-10-25
 Authors@R: c(person("Italo", "Granato", email = "italo.granato@gmail.com", role = c("aut", "cre"), comment = c(ORCID = "0000-0003-2093-6810")),
              person("Luna-Vázquez", "Francisco J.", email = "frahik@gmail.com ", role = c("aut"), comment = c(ORCID = "0000-0002-5370-7152")),
@@ -20,7 +20,8 @@ Imports:
       stats,
 Suggests:
       BGLR,
-      coda
+      coda,
+      testthat
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
