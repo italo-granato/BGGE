@@ -14,7 +14,7 @@ Development version 0.6.5
 
 <h4 align="center">
 
-\[Last README update: 2018-08-10\]
+\[Last README update: 2018-10-26\]
 
 </h4>
 
@@ -51,8 +51,12 @@ News of this version (0.6.5)
 
 </h2>
 
-  - remove previously Sc conditional distribution
-  - fixed rm.na
+Changes:
+
+  - Added compatibility with the functions (print() and plot()).
+  - Include ORCID of the authors.
+  - Include url of the project.
+  - Now the `BGGE()` function exports the input parameters.
 
 See the last updates in [NEWS](NEWS.md).
 
@@ -116,8 +120,20 @@ K <- getK(Y = pheno_geno, X = X, kernel = "GB", model = "MM")
 y <- as.vector(wheat.Y)
 
 fit <- BGGE(y = y, K = K, ne = rep(599, 4))
+fit
+```
 
-plot(fit$yHat, y)
+    ## Model Fitted with: 
+    ##  1000  Iterations, burning the first  200  and thining every  3 
+    ## 
+    ##  Some predicted Values: 
+    ##  [1]  -0.2886  -0.4302  -0.4111   0.3786  -0.0528   0.2404   0.2822
+    ##  [8]  -0.0952  -0.7248  -1.0723
+    ## 
+    ##  Use str() function to found more datailed information.
+
+``` r
+plot(fit)
 ```
 
 ![](README_files/figure-gfm/BGGEUse-1.png)<!-- -->
@@ -173,7 +189,7 @@ citation('BGGE')
     ##   Italo Granato, Luna-Vázquez Francisco J. and Cuevas Jaime
     ##   (2018). BGGE: Bayesian Genomic Linear Models Applied to GE
     ##   Genome Selection. R package version 0.6.5.
-    ##   https://CRAN.R-project.org/package=BGGE
+    ##   https://github.com/italo-granato/BGGE
     ## 
     ## A BibTeX entry for LaTeX users is
     ## 
@@ -182,7 +198,7 @@ citation('BGGE')
     ##     author = {Italo Granato and Luna-Vázquez {Francisco J.} and Cuevas Jaime},
     ##     year = {2018},
     ##     note = {R package version 0.6.5},
-    ##     url = {https://CRAN.R-project.org/package=BGGE},
+    ##     url = {https://github.com/italo-granato/BGGE},
     ##   }
 
 <h2 id="contributions">

@@ -1,10 +1,11 @@
 Package: BGGE
 Title: Bayesian Genomic Linear Models Applied to GE Genome Selection
-Version: 0.6.4
-Date: 2018-07-23
-Authors@R: c(person("Italo", "Granato", email = "italo.granato@gmail.com", role = c("aut", "cre")),
-             person("Luna-Vázquez", "Francisco J.", email = "frahik@gmail.com ", role =c("aut")),
-             person("Cuevas", "Jaime", email = "jaicueva@uqroo.edu.mx", role =c("aut")))
+Version: 0.6.6
+Date: 2018-10-25
+Authors@R: c(person("Italo", "Granato", email = "italo.granato@gmail.com", role = c("aut", "cre"), comment = c(ORCID = "0000-0003-2093-6810")),
+             person("Luna-Vázquez", "Francisco J.", email = "frahik@gmail.com ", role = c("aut"), comment = c(ORCID = "0000-0002-5370-7152")),
+             person("Cuevas", "Jaime", email = "jaicueva@uqroo.edu.mx", role = c("aut"), comment = c(ORCID = "0000-0002-0685-2867")))
+Maintainer: Italo Granato <italo.granato@gmail.com>
 Description: Application of genome prediction for a continuous variable, focused 
              on genotype by environment (GE) genomic selection models (GS). It consists a group of functions 
              that help to create regression kernels for some GE genomic models proposed by Jarquín et al. (2014) <doi:10.1007/s00122-013-2243-1>
@@ -12,13 +13,16 @@ Description: Application of genome prediction for a continuous variable, focused
              The prediction function uses an orthogonal transformation of the data and specific priors
              present by Cuevas et al. (2014) <doi:10.1534/g3.114.013094>.
 Depends: R (>= 3.1.1)
+URL: https://github.com/italo-granato/BGGE
+BugReports: https://github.com/italo-granato/BGGE/issues/new
+NeedsCompilation: no
 Imports: 
       stats,
 Suggests:
       BGLR,
-      coda
+      coda,
+      testthat
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 6.0.1
-
+RoxygenNote: 6.1.0
