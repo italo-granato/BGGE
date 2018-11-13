@@ -14,13 +14,15 @@ Development version 0.6.5
 
 <h4 align="center">
 
-\[Last README update: 2018-10-26\]
+\[Last README update: 2018-11-13\]
 
 </h4>
 
 <p align="center">
 
-<a href="https://www.gnu.org/licenses/lgpl-3.0">
+<a href="https://www.tidyverse.org/lifecycle/#maturing">
+<img src="https://img.shields.io/badge/lifecycle-maturing-blue.svg" alt="Maturing">
+</a> <a href="https://www.gnu.org/licenses/lgpl-3.0">
 <img src="https://img.shields.io/badge/License-LGPL%20v3-blue.svg" alt="LGPL, Version 3.0">
 </a> <a href="http://www.repostatus.org/#active">
 <img src="http://www.repostatus.org/badges/latest/active.svg" alt="Status of the Repo: Active">
@@ -127,8 +129,8 @@ fit
     ##  1000  Iterations, burning the first  200  and thining every  3 
     ## 
     ##  Some predicted Values: 
-    ##  [1]  -0.2886  -0.4302  -0.4111   0.3786  -0.0528   0.2404   0.2822
-    ##  [8]  -0.0952  -0.7248  -1.0723
+    ##  [1]  -0.2737  -0.4081  -0.3799   0.3694  -0.0362   0.2354   0.2840
+    ##  [8]  -0.1194  -0.7742  -1.0280
     ## 
     ##  Use str() function to found more datailed information.
 
