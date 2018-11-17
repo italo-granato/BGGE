@@ -140,7 +140,7 @@ BGGE <- function(y, K, XF = NULL, ne, ite = 1000, burn = 200, thin = 3, verbose 
     }
     
     
-    for (i in 1:length(K)) {
+    for (i in seq_len(K)) {
       if (K[[i]]$Type == "D") {
         tmp <- list()
         ei <- eig(K[[i]]$Kernel, tol)
@@ -245,8 +245,8 @@ BGGE <- function(y, K, XF = NULL, ne, ite = 1000, burn = 200, thin = 3, verbose 
   nu <- 3
   Sce <- (nu + 2) * (1 - R2) * var(y, na.rm = TRUE)
   Sc <- numeric(length(K))
-  for (i in 1:length(K)) {
-    Sc[i] <- (nu + 2) * R2 * var(y, na.rm = T)/mean(diag(K[[i]]$Kernel))
+  for (i in seq_len(K)) {
+    Sc[i] <- (nu + 2) * R2 * var(y, na.rm = TRUE)/mean(diag(K[[i]]$Kernel))
   }
   tau <- 0.01
   u <- list()
