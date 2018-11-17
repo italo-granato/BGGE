@@ -3,6 +3,7 @@
 #' @param x BGGE object
 #' @param ... Further arguments passed to or from other methods.
 #'
+#' @importFrom utils head
 #' @return Displays the most relevant model fit information.
 #' @export
 #'
@@ -20,7 +21,6 @@ print.BGGE <- function(x, ...){
 #' @title Comparative plot
 #'
 #' @description Simple plot of the predicted values versus observed values
-#' @usage plot(BGGE_Object, ...)
 #' 
 #' @param x \code{BGGE object}.
 #' @param ... Further arguments passed to or from other methods.
@@ -33,6 +33,6 @@ plot.BGGE <- function(x, ...){
   response <- x$y
   predictions <- x$yHat
   limits <- range(c(response, predictions), na.rm = TRUE)
-  plot(response, predictions, xlim = limits, ylim = limits, xlab = 'Observed values', ylab = 'Predicted values', ...);
+  plot(response, predictions, xlim = limits, ylim = limits, xlab = 'Observed values', ylab = 'Predicted values', ...)
   abline(a = 0, b = 1, lty = 3)
 }
