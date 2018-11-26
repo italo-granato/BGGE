@@ -142,7 +142,7 @@ getK <- function(Y, X, kernel = c("GK", "GB"), setKernel = NULL, bandwidth = 1, 
              D <- (as.matrix(dist(X))) ^ 2
              
              G <- list()
-             for(i in seq_len(bandwidth)){
+             for(i in seq_len(length(bandwidth))) {
                ker.tmp <- exp(-bandwidth[i] * D / quantile(D, quantil))
                #G[[i]] <- Zg %*% tcrossprod(ker.tmp, Zg)
                G[[i]] <- list(Kernel = Zg %*% tcrossprod(ker.tmp, Zg), Type = "D")
@@ -208,7 +208,7 @@ getK <- function(Y, X, kernel = c("GK", "GB"), setKernel = NULL, bandwidth = 1, 
            
            out.tmp <- list()
            
-           for(j in seq_len(G)){
+           for(j in seq_len(length(G))) {
            out.tmp <- c(out.tmp, lapply(1:nEnv, function(i){
              ZEE[,i] <- Ze[,i]
              ZEEZ <- ZEE %*% t(Ze)
